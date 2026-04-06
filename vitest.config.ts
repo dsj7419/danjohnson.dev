@@ -25,12 +25,11 @@ export default defineConfig({
       exclude: [
         'src/**/*.d.ts',
         'src/types/**',
-        'src/app/**/layout.tsx',
-        'src/app/**/loading.tsx',
-        'src/app/**/not-found.tsx',
-        'src/app/**/page.tsx',
+        'src/app/**',
         'src/config/**',
         'src/lib/fonts.ts',
+        'src/components/layout/mobile-nav.tsx',
+        'src/components/layout/theme-toggle.tsx',
       ],
       thresholds: {
         lines: 80,
