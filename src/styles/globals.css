@@ -47,6 +47,8 @@
   --color-text-muted: oklch(0.45 0.01 260);
   --color-text-faint: oklch(0.6 0.008 260);
   --color-border: oklch(0.88 0.005 250);
+  --color-code-bg: oklch(0.955 0.004 250);
+  --color-code-text: oklch(0.25 0.01 260);
 
   --duration-fast: 100ms;
   --duration-normal: 200ms;
@@ -64,6 +66,8 @@
   --color-text-muted: oklch(0.7 0.008 250);
   --color-text-faint: oklch(0.5 0.008 250);
   --color-border: oklch(0.28 0.01 260);
+  --color-code-bg: oklch(0.12 0.01 260);
+  --color-code-text: oklch(0.88 0.005 250);
   --color-accent-500: oklch(0.65 0.14 250);
 }
 
@@ -89,5 +93,16 @@
   .dark ::selection {
     background-color: var(--color-accent-800);
     color: var(--color-accent-100);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
