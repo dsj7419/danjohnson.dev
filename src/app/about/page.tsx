@@ -4,6 +4,7 @@ import { Section } from '@/components/primitives/section'
 import { Stack } from '@/components/primitives/stack'
 import { getPage } from '@/lib/content'
 import { buildPageMetadata } from '@/lib/metadata'
+import { personJsonLd } from '@/lib/structured-data'
 
 export function generateMetadata() {
   const page = getPage('about')
@@ -19,15 +20,21 @@ export default async function AboutPage() {
   const { default: Content } = await import('@/content/pages/about.mdx')
 
   return (
-    <Section>
-      <Container width="reading">
-        <Stack gap={8}>
-          <Heading level={1}>About</Heading>
-          <Stack gap={6}>
-            <Content />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd()) }}
+      />
+      <Section>
+        <Container width="reading">
+          <Stack gap={8}>
+            <Heading level={1}>About</Heading>
+            <Stack gap={6}>
+              <Content />
+            </Stack>
           </Stack>
-        </Stack>
-      </Container>
-    </Section>
+        </Container>
+      </Section>
+    </>
   )
 }

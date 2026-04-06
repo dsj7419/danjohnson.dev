@@ -158,7 +158,7 @@ describe('slugify', () => {
 describe('getAllCaseStudies', () => {
   beforeEach(() => {
     vi.mocked(fs.existsSync).mockReturnValue(true)
-    vi.mocked(fs.readdirSync).mockReturnValue(['test-project.mdx' as unknown as fs.Dirent])
+    vi.mocked(fs.readdirSync).mockReturnValue(['test-project.mdx' as never])
     vi.mocked(fs.readFileSync).mockReturnValue(validCaseStudyMdx)
   })
 
@@ -199,7 +199,7 @@ describe('getAllCaseStudies', () => {
 describe('getCaseStudy', () => {
   beforeEach(() => {
     vi.mocked(fs.existsSync).mockReturnValue(true)
-    vi.mocked(fs.readdirSync).mockReturnValue(['test-project.mdx' as unknown as fs.Dirent])
+    vi.mocked(fs.readdirSync).mockReturnValue(['test-project.mdx' as never])
     vi.mocked(fs.readFileSync).mockReturnValue(validCaseStudyMdx)
   })
 
@@ -217,7 +217,7 @@ describe('getCaseStudy', () => {
 describe('getAllArticles', () => {
   beforeEach(() => {
     vi.mocked(fs.existsSync).mockReturnValue(true)
-    vi.mocked(fs.readdirSync).mockReturnValue(['test-article.mdx' as unknown as fs.Dirent])
+    vi.mocked(fs.readdirSync).mockReturnValue(['test-article.mdx' as never])
     vi.mocked(fs.readFileSync).mockReturnValue(validArticleMdx)
   })
 
@@ -236,7 +236,7 @@ describe('getAllArticles', () => {
 describe('getArticle', () => {
   beforeEach(() => {
     vi.mocked(fs.existsSync).mockReturnValue(true)
-    vi.mocked(fs.readdirSync).mockReturnValue(['test-article.mdx' as unknown as fs.Dirent])
+    vi.mocked(fs.readdirSync).mockReturnValue(['test-article.mdx' as never])
     vi.mocked(fs.readFileSync).mockReturnValue(validArticleMdx)
   })
 
@@ -254,7 +254,7 @@ describe('getArticle', () => {
 describe('getPage', () => {
   beforeEach(() => {
     vi.mocked(fs.existsSync).mockReturnValue(true)
-    vi.mocked(fs.readdirSync).mockReturnValue(['about.mdx' as unknown as fs.Dirent])
+    vi.mocked(fs.readdirSync).mockReturnValue(['about.mdx' as never])
     vi.mocked(fs.readFileSync).mockReturnValue(validPageMdx)
   })
 
@@ -287,23 +287,21 @@ Content here.
 
   beforeEach(() => {
     vi.mocked(fs.existsSync).mockReturnValue(true)
-    vi.mocked(fs.readdirSync).mockReturnValue(['draft.mdx' as unknown as fs.Dirent])
+    vi.mocked(fs.readdirSync).mockReturnValue(['draft.mdx' as never])
     vi.mocked(fs.readFileSync).mockReturnValue(draftMdx)
   })
 
   it('includes drafts in development', () => {
-    const originalEnv = process.env['NODE_ENV']
-    process.env['NODE_ENV'] = 'development'
+    vi.stubEnv('NODE_ENV', 'development')
     const entries = getAllCaseStudies()
     expect(entries).toHaveLength(1)
-    process.env['NODE_ENV'] = originalEnv
+    vi.unstubAllEnvs()
   })
 
   it('excludes drafts in production', () => {
-    const originalEnv = process.env['NODE_ENV']
-    process.env['NODE_ENV'] = 'production'
+    vi.stubEnv('NODE_ENV', 'production')
     const entries = getAllCaseStudies()
     expect(entries).toHaveLength(0)
-    process.env['NODE_ENV'] = originalEnv
+    vi.unstubAllEnvs()
   })
 })

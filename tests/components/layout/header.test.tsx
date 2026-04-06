@@ -10,6 +10,12 @@ vi.mock('next/link', () => ({
   ),
 }))
 
+vi.mock('@/components/layout/nav-link', () => ({
+  NavLink: ({ children, href }: { children: React.ReactNode; href: string }) => (
+    <a href={href}>{children}</a>
+  ),
+}))
+
 vi.mock('@/components/layout/theme-toggle', () => ({
   ThemeToggle: () => <button aria-label="Theme toggle" />,
 }))

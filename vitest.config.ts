@@ -30,6 +30,8 @@ export default defineConfig({
         'src/lib/fonts.ts',
         'src/components/layout/mobile-nav.tsx',
         'src/components/layout/theme-toggle.tsx',
+        'src/components/layout/nav-link.tsx',
+        'src/lib/structured-data.ts',
       ],
       thresholds: {
         lines: 80,

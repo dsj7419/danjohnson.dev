@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { TableOfContents } from '@/components/blocks/table-of-contents'
 import { Container } from '@/components/primitives/container'
+import { Divider } from '@/components/primitives/divider'
 import { Eyebrow } from '@/components/primitives/eyebrow'
 import { Heading } from '@/components/primitives/heading'
 import { Section } from '@/components/primitives/section'
@@ -10,6 +12,7 @@ import { Stack } from '@/components/primitives/stack'
 import { Text } from '@/components/primitives/text'
 import { getAllArticles, getArticle } from '@/lib/content'
 import { buildContentMetadata } from '@/lib/metadata'
+import { articleJsonLd } from '@/lib/structured-data'
 
 type PageProps = {
   params: Promise<{ slug: string }>
@@ -44,8 +47,32 @@ export default async function ArticlePage({ params }: PageProps) {
 
   const { default: Content } = await import(`@/content/writing/${slug}.mdx`)
 
+  const formattedDate = new Date(entry.frontmatter.date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+
+  const hasUpdate =
+    entry.frontmatter.updatedAt !== undefined &&
+    entry.frontmatter.updatedAt !== entry.frontmatter.date
+
   return (
     <article>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            articleJsonLd({
+              title: entry.frontmatter.title,
+              description: entry.frontmatter.description,
+              date: entry.frontmatter.date,
+              url: `/writing/${slug}`,
+              updatedAt: entry.frontmatter.updatedAt,
+            }),
+          ),
+        }}
+      />
       <Section>
         <Container>
           <Stack gap={4}>
@@ -53,12 +80,18 @@ export default async function ArticlePage({ params }: PageProps) {
             <Heading level={1}>{entry.frontmatter.title}</Heading>
             <Text variant="lead">{entry.frontmatter.description}</Text>
             <Text variant="small">
-              {new Date(entry.frontmatter.date).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}{' '}
-              &middot; {entry.readingTime} min read
+              {formattedDate} &middot; {entry.readingTime} min read
+              {hasUpdate && (
+                <>
+                  {' '}
+                  &middot; Updated{' '}
+                  {new Date(entry.frontmatter.updatedAt!).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
+                </>
+              )}
             </Text>
           </Stack>
         </Container>
@@ -70,6 +103,21 @@ export default async function ArticlePage({ params }: PageProps) {
             {entry.toc.length > 0 && <TableOfContents entries={entry.toc} />}
             <Content />
           </Stack>
+        </Container>
+      </Section>
+
+      <Section>
+        <Container width="reading">
+          <Divider />
+          <div className="pt-8 text-center">
+            <Link
+              href="/writing"
+              className="text-sm text-[var(--color-text-muted)] transition-colors hover:text-accent-500"
+              style={{ transitionDuration: 'var(--duration-fast)' }}
+            >
+              &larr; More writing
+            </Link>
+          </div>
         </Container>
       </Section>
     </article>

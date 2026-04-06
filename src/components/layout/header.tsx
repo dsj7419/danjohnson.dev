@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { siteConfig } from '@/config/site'
 
 import { MobileNav } from './mobile-nav'
+import { NavLink } from './nav-link'
 import { ThemeToggle } from './theme-toggle'
 
 export function Header() {
@@ -21,13 +22,7 @@ export function Header() {
             <ul className="flex items-center gap-6">
               {siteConfig.nav.map((item) => (
                 <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className="text-sm text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)]"
-                    style={{ transitionDuration: 'var(--duration-fast)' }}
-                  >
-                    {item.label}
-                  </Link>
+                  <NavLink href={item.href}>{item.label}</NavLink>
                 </li>
               ))}
             </ul>

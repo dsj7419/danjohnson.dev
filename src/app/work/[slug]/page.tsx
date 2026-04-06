@@ -1,8 +1,12 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
+import { CaseStudyMeta } from '@/components/blocks/case-study-meta'
+import { CaseStudyNav } from '@/components/blocks/case-study-nav'
+import { MetricStrip } from '@/components/blocks/metric-strip'
+import { StackList } from '@/components/blocks/stack-list'
 import { Container } from '@/components/primitives/container'
-import { Eyebrow } from '@/components/primitives/eyebrow'
+import { Divider } from '@/components/primitives/divider'
 import { Heading } from '@/components/primitives/heading'
 import { Section } from '@/components/primitives/section'
 import { Stack } from '@/components/primitives/stack'
@@ -41,32 +45,82 @@ export default async function CaseStudyPage({ params }: PageProps) {
   const entry = getCaseStudy(slug)
   if (!entry) notFound()
 
+  const allCaseStudies = getAllCaseStudies()
+  const currentIndex = allCaseStudies.findIndex((e) => e.slug === slug)
+  const previous =
+    currentIndex > 0
+      ? {
+          slug: allCaseStudies[currentIndex - 1]!.slug,
+          title: allCaseStudies[currentIndex - 1]!.frontmatter.title,
+        }
+      : undefined
+  const next =
+    currentIndex < allCaseStudies.length - 1
+      ? {
+          slug: allCaseStudies[currentIndex + 1]!.slug,
+          title: allCaseStudies[currentIndex + 1]!.frontmatter.title,
+        }
+      : undefined
+
   const { default: Content } = await import(`@/content/case-studies/${slug}.mdx`)
+  const { frontmatter } = entry
 
   return (
     <article>
-      <Section>
+      <Section background="alt">
         <Container>
-          <Stack gap={4}>
-            <Eyebrow>{entry.frontmatter.role}</Eyebrow>
-            <Heading level={1}>{entry.frontmatter.title}</Heading>
-            {entry.frontmatter.subtitle && <Text variant="lead">{entry.frontmatter.subtitle}</Text>}
-            <Text variant="small">
-              {new Date(entry.frontmatter.date).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}{' '}
-              &middot; {entry.readingTime} min read
-            </Text>
+          <Stack gap={6}>
+            <Stack gap={4}>
+              <Heading level={1}>{frontmatter.title}</Heading>
+              {frontmatter.subtitle && <Text variant="lead">{frontmatter.subtitle}</Text>}
+            </Stack>
+
+            <CaseStudyMeta
+              role={frontmatter.role}
+              date={frontmatter.date}
+              client={frontmatter.client}
+              organization={frontmatter.organization}
+              duration={frontmatter.duration}
+              teamSize={frontmatter.teamSize}
+            />
+
+            <div className="flex flex-wrap gap-2">
+              {frontmatter.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full bg-[var(--color-bg)] px-2.5 py-0.5 font-mono text-xs text-[var(--color-text-faint)]"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </Stack>
+        </Container>
+      </Section>
+
+      {frontmatter.metrics && frontmatter.metrics.length > 0 && (
+        <Section>
+          <Container>
+            <MetricStrip items={frontmatter.metrics} />
+          </Container>
+        </Section>
+      )}
+
+      <Section>
+        <Container width="reading">
+          <Stack gap={6}>
+            <Text variant="small">{entry.readingTime} min read</Text>
+            <Content />
           </Stack>
         </Container>
       </Section>
 
       <Section>
-        <Container width="reading">
-          <Stack gap={6}>
-            <Content />
+        <Container>
+          <Stack gap={8}>
+            <StackList items={frontmatter.stack} />
+            <Divider />
+            <CaseStudyNav previous={previous} next={next} />
           </Stack>
         </Container>
       </Section>

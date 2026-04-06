@@ -7,9 +7,16 @@ import { Divider } from '@/components/primitives/divider'
 import { Heading } from '@/components/primitives/heading'
 
 function createHeading(level: 1 | 2 | 3 | 4) {
+  const spacingByLevel: Record<number, string> = {
+    1: 'scroll-mt-20',
+    2: 'mt-12 mb-4 scroll-mt-20',
+    3: 'mt-8 mb-3 scroll-mt-20',
+    4: 'mt-6 mb-2 scroll-mt-20',
+  }
+
   function MdxHeading({ children, id }: ComponentPropsWithoutRef<'h1'>) {
     return (
-      <Heading level={level} as={`h${level}`} id={id} className="scroll-mt-20">
+      <Heading level={level} as={`h${level}`} id={id} className={spacingByLevel[level] ?? ''}>
         {children}
       </Heading>
     )
@@ -80,7 +87,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     li: (props: ComponentPropsWithoutRef<'li'>) => <li className="pl-1" {...props} />,
     blockquote: (props: ComponentPropsWithoutRef<'blockquote'>) => (
       <blockquote
-        className="border-l-2 border-accent-500 pl-4 font-heading italic text-[var(--color-text-muted)]"
+        className="my-6 border-l-2 border-accent-500 pl-4 font-heading italic text-[var(--color-text-muted)]"
         {...props}
       />
     ),
@@ -98,7 +105,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     },
     pre: (props: ComponentPropsWithoutRef<'pre'>) => (
       <pre
-        className="overflow-x-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-code-bg)] p-4 font-mono text-sm leading-relaxed"
+        className="my-6 overflow-x-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-code-bg)] p-4 font-mono text-sm leading-relaxed"
         {...props}
       />
     ),
