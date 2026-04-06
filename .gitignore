@@ -40,10 +40,8 @@ Thumbs.db
 
 # ide
 .idea/
-.vscode/
 *.swp
 *.swo
 
-# planning artifacts (not shipped)
-blueprint.txt
-Dan_Johnson_Master_Blueprint.docx
+# archive (original planning docs, not shipped)
+docs/archive/

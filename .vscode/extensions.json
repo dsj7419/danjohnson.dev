@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "bradlc.vscode-tailwindcss",
+    "davidanson.vscode-markdownlint",
+    "unifiedjs.vscode-mdx",
+    "vitest.explorer"
+  ]
+}

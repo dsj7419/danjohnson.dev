@@ -12,9 +12,9 @@ export default defineConfig({
   test: {
     environment: 'happy-dom',
     globals: true,
-    include: ['src/**/*.test.{ts,tsx}'],
+    include: ['tests/**/*.test.{ts,tsx}'],
     exclude: ['node_modules', '.next', 'out'],
-    setupFiles: ['./src/test/setup.ts'],
+    setupFiles: ['./tests/setup.ts'],
     clearMocks: true,
     restoreMocks: true,
     coverage: {
@@ -23,14 +23,12 @@ export default defineConfig({
       reportsDirectory: './coverage',
       include: ['src/**/*.{ts,tsx}'],
       exclude: [
-        'src/**/*.test.{ts,tsx}',
         'src/**/*.d.ts',
         'src/types/**',
         'src/app/**/layout.tsx',
         'src/app/**/loading.tsx',
         'src/app/**/not-found.tsx',
         'src/app/**/page.tsx',
-        'src/test/**',
         'src/config/**',
         'src/lib/fonts.ts',
       ],

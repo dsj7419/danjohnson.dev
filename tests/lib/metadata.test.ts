@@ -1,4 +1,4 @@
-import { buildPageMetadata } from './metadata'
+import { buildPageMetadata } from '@/lib/metadata'
 
 describe('buildPageMetadata', () => {
   it('returns metadata with the given title', () => {
