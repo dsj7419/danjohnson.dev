@@ -4,6 +4,7 @@ export const siteConfig = {
   description:
     'I design and build complex, high-reliability software systems, AI-enabled products, and performance-critical applications.',
   url: process.env['NEXT_PUBLIC_SITE_URL'] ?? 'https://danjohnson.dev',
+  email: 'hello@danjohnson.dev',
   social: {
     github: 'https://github.com/dsj7419',
     linkedin: 'https://linkedin.com/in/danjohnsondev',

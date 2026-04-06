@@ -26,6 +26,7 @@ export const caseStudyFrontmatterSchema = z.object({
       }),
     )
     .optional(),
+  related: z.array(z.string()).optional(),
 })
 
 export type CaseStudyFrontmatter = z.infer<typeof caseStudyFrontmatterSchema>
@@ -47,6 +48,7 @@ export const articleFrontmatterSchema = z.object({
   featured: z.boolean().default(false),
   draft: z.boolean().default(false),
   ogImage: z.string().optional(),
+  related: z.array(z.string()).optional(),
 })
 
 export type ArticleFrontmatter = z.infer<typeof articleFrontmatterSchema>

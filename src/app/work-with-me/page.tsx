@@ -1,7 +1,9 @@
+import { ContactCTA } from '@/components/blocks/contact-cta'
 import { Container } from '@/components/primitives/container'
 import { Heading } from '@/components/primitives/heading'
 import { Section } from '@/components/primitives/section'
 import { Stack } from '@/components/primitives/stack'
+import { siteConfig } from '@/config/site'
 import { getPage } from '@/lib/content'
 import { buildPageMetadata } from '@/lib/metadata'
 
@@ -26,6 +28,7 @@ export default async function WorkWithMePage() {
           <Stack gap={6}>
             <Content />
           </Stack>
+          <ContactCTA email={siteConfig.email} />
         </Stack>
       </Container>
     </Section>
