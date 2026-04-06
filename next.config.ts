@@ -53,6 +53,17 @@ const nextConfig: NextConfig = {
   },
 }
 
-const withMDX = createMDX({})
+const withMDX = createMDX({
+  options: {
+    remarkPlugins: ['remark-gfm'],
+    rehypePlugins: [
+      [
+        'rehype-pretty-code',
+        { theme: { light: 'github-light', dark: 'github-dark-dimmed' }, keepBackground: false },
+      ],
+      'rehype-slug',
+    ],
+  },
+})
 
 export default withMDX(nextConfig)

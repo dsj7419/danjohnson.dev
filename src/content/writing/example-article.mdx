@@ -1,0 +1,69 @@
+---
+title: 'How I Design Software Systems Before Writing Code'
+description: 'Architecture-first thinking produces better software. Here is my approach.'
+date: '2026-04-01'
+tags:
+  - architecture
+  - engineering
+category: 'engineering-philosophy'
+featured: true
+draft: true
+---
+
+import { Callout } from '@/components/blocks/callout'
+
+## Why Architecture First
+
+Most software projects fail not because of bad code, but because of bad structure. When you start coding before you understand the system, you build the wrong thing correctly.
+
+Architecture-first thinking means understanding **what** you are building and **why** before deciding **how**.
+
+### The Cost of Skipping Design
+
+Teams that skip system design often end up with:
+
+1. Tightly coupled modules that cannot evolve independently
+2. Performance problems baked into the foundation
+3. Security vulnerabilities that require rewrites to fix
+4. Maintenance nightmares that slow every future change
+
+<Callout variant="warning" title="Common Mistake">
+  Starting with the UI and working backwards to the data model almost always
+  produces a system that is hard to maintain and impossible to scale.
+</Callout>
+
+## My Approach
+
+I follow a consistent process for every project:
+
+- **Understand the domain** before choosing tools
+- **Map the data flow** before designing the interface
+- **Define the boundaries** before writing any code
+- **Build the smallest working version** and iterate
+
+### Example: Content Engine Design
+
+When building the content engine for this site, I started with the content contract:
+
+```typescript
+type ContentEntry<T> = {
+  slug: string
+  frontmatter: T
+  readingTime: number
+  toc: TocEntry[]
+  content: ComponentType
+}
+```
+
+This type defines exactly what the system produces. Every page, every component, every feature consumes this contract. The implementation details can change without affecting consumers.
+
+## The Payoff
+
+Architecture-first thinking takes more time upfront but saves far more time over the life of a project. Systems built this way are:
+
+- Easier to test
+- Easier to maintain
+- Easier to extend
+- Easier to hand off
+
+The investment compounds over time.

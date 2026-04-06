@@ -5,6 +5,7 @@ type HeadingLevel = 1 | 2 | 3 | 4
 type HeadingProps = {
   level: HeadingLevel
   as?: ElementType
+  id?: string | undefined
   className?: string
   children: ReactNode
 }
@@ -23,7 +24,11 @@ const levelElements: Record<HeadingLevel, ElementType> = {
   4: 'h4',
 }
 
-export function Heading({ level, as, className = '', children }: HeadingProps) {
+export function Heading({ level, as, id, className = '', children }: HeadingProps) {
   const Tag = as ?? levelElements[level]
-  return <Tag className={`${levelStyles[level]} ${className}`.trim()}>{children}</Tag>
+  return (
+    <Tag id={id} className={`${levelStyles[level]} ${className}`.trim()}>
+      {children}
+    </Tag>
+  )
 }

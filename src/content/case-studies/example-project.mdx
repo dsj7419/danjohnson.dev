@@ -1,0 +1,107 @@
+---
+title: 'Example Project'
+subtitle: 'A demonstration of the content engine'
+description: 'This example case study demonstrates every content block and feature available in the publishing system.'
+date: '2026-04-05'
+tags:
+  - architecture
+  - performance
+  - ai
+role: 'Lead Engineer'
+client: 'Example Client'
+organization: 'Example Org'
+duration: '3 months'
+teamSize: '2 engineers'
+stack:
+  - Next.js
+  - TypeScript
+  - PostgreSQL
+  - Tailwind CSS
+outcome: 'Launched on time with 98 Lighthouse score'
+featured: true
+draft: true
+metrics:
+  - label: 'Lighthouse'
+    value: '98'
+  - label: 'Load Time'
+    value: '1.2s'
+  - label: 'Bundle Size'
+    value: '45KB'
+---
+
+import { Callout } from '@/components/blocks/callout'
+import { Quote } from '@/components/blocks/quote'
+import { MetricStrip } from '@/components/blocks/metric-strip'
+import { DiagramWrapper } from '@/components/blocks/diagram-wrapper'
+
+## Overview
+
+This is an example case study that demonstrates the full content engine. Every heading, code block, callout, quote, and metric strip is rendered through the design system primitives.
+
+The prose you are reading flows through our MDX component mapping — headings use `Heading`, paragraphs are styled with our type scale, and links use the accent color with proper underlines.
+
+## The Problem
+
+Building a content engine that renders consistently across case studies and articles requires careful coordination between the design system, MDX compilation, and content loading.
+
+### Technical Challenges
+
+The key challenges included:
+
+- **Frontmatter validation** at build time using Zod schemas
+- **Syntax highlighting** that works in both light and dark themes
+- **Table of Contents** generation from heading structure
+- **Reading time** calculation from word count
+
+<Callout variant="insight" title="Key Decision">
+  We chose to build custom MDX component overrides instead of using the Tailwind
+  Typography plugin. This gives us full control over every rendered element.
+</Callout>
+
+## Architecture
+
+The content engine follows a pipeline architecture:
+
+1. MDX files are read from `src/content/`
+2. Frontmatter is extracted and validated via Zod
+3. Content is compiled by `@next/mdx` with rehype/remark plugins
+4. Components are rendered through `mdx-components.tsx`
+5. Pages are statically generated at build time
+
+### Code Example
+
+Here is an example of how the content loader works:
+
+```typescript
+export function getAllCaseStudies(): ContentEntry<CaseStudyFrontmatter>[] {
+  return sortByDateWithFeatured(
+    loadContentEntries('case-studies', caseStudyFrontmatterSchema),
+  )
+}
+```
+
+Inline code also works: the `ContentEntry<T>` type wraps frontmatter with slug, reading time, and TOC data.
+
+## Results
+
+<MetricStrip
+  items={[
+    { label: 'Lighthouse Score', value: '98' },
+    { label: 'Load Time', value: '1.2s' },
+    { label: 'Bundle Size', value: '45KB' },
+  ]}
+/>
+
+<Quote attribution="Example Client" role="Product Manager">
+  The system works exactly as designed. Every piece of content renders
+  consistently.
+</Quote>
+
+## Reflection
+
+<Callout variant="note">
+  This example file serves as both a test fixture and documentation for the
+  content engine capabilities.
+</Callout>
+
+The content engine demonstrates that a well-designed system makes every future piece of content predictable and consistent. No ad-hoc styling, no custom pages — just MDX files that flow through the design system.
