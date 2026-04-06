@@ -85,7 +85,7 @@
 
 ### 2.1 Case Studies (3 required for launch)
 
-**Austin Eischeid Site**
+Austin Eischeid Site
 
 - [ ] Overview: designer collaboration, what the product is
 - [ ] Problem: translating a designer's vision into production reality
@@ -99,13 +99,13 @@
 - [ ] Reflection: lessons learned
 - [ ] Screenshots and visual assets gathered
 
-**Project Chimera**
+Project Chimera
 
 - [ ] Same structure as above
 - [ ] AI integration section: what AI does, how hallucinations handled, cost control
 - [ ] Architecture diagram showing AI pipeline
 
-**Forges of Karinth**
+Forges of Karinth
 
 - [ ] Same structure as above
 - [ ] Focus on deterministic simulation, game engine architecture
@@ -113,7 +113,7 @@
 
 ### 2.2 Page Content
 
-**Homepage copy**
+Homepage copy
 
 - [ ] Hero statement (who you are, what you do — 2-3 sentences)
 - [ ] Credibility signals section (projects, awards, experience summary)
@@ -124,7 +124,7 @@
 - [ ] Brief about section
 - [ ] CTA to Work With Me
 
-**How I Build**
+How I Build
 
 - [ ] Architecture-first thinking
 - [ ] AI-augmented development workflow (how you actually use AI tools in your process)
@@ -134,14 +134,14 @@
 - [ ] How you approach new projects
 - [ ] Long-term maintainability mindset
 
-**About**
+About
 
 - [ ] Background and story
 - [ ] What drives you
 - [ ] How you work with people
 - [ ] Professional photo (if available)
 
-**Work With Me**
+Work With Me
 
 - [ ] Who you work with (founders, designers, teams)
 - [ ] Types of projects you take on
@@ -367,7 +367,7 @@ These are valuable but explicitly NOT required for V1:
 
 ## Timeline Overview (~6 weeks)
 
-```
+```text
 Week 1:     Epic 0 (Foundation) + Start Epic 2 (Content writing)
 Week 1-2:   Epic 1 (Design System) + Continue Epic 2
 Week 2-3:   Continue Epic 2 (Content) + Start Epic 3 (Pages)
