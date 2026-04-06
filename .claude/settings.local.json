@@ -5,7 +5,11 @@
       "mcp__Sanity__read_docs",
       "mcp__claude_ai_Vercel__check_domain_availability_and_price",
       "mcp__claude_ai_Context7__resolve-library-id",
-      "mcp__claude_ai_Context7__query-docs"
+      "mcp__claude_ai_Context7__query-docs",
+      "mcp__claude_ai_Vercel__list_teams",
+      "mcp__claude_ai_Vercel__get_project",
+      "mcp__claude_ai_Vercel__get_deployment_build_logs",
+      "mcp__claude_ai_Vercel__web_fetch_vercel_url"
     ]
   }
 }

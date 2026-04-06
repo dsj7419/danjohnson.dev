@@ -1,17 +1,27 @@
-import Link from 'next/link'
+import { Button } from '@/components/primitives/button'
+import { Container } from '@/components/primitives/container'
+import { Eyebrow } from '@/components/primitives/eyebrow'
+import { Heading } from '@/components/primitives/heading'
+import { Stack } from '@/components/primitives/stack'
+import { Text } from '@/components/primitives/text'
 
 export default function NotFound() {
   return (
-    <main className="mx-auto flex min-h-screen max-w-[var(--width-content)] flex-col items-center justify-center px-[var(--spacing-content-x)]">
-      <h1 className="font-heading text-4xl font-semibold tracking-tight">404</h1>
-      <p className="mt-4 text-[var(--color-text-muted)]">This page does not exist.</p>
-      <Link
-        href="/"
-        className="mt-8 text-accent-500 underline underline-offset-4 transition-colors hover:text-accent-600"
-        style={{ transitionDuration: 'var(--duration-fast)' }}
-      >
-        Back to home
-      </Link>
-    </main>
+    <div className="flex flex-1 items-center justify-center py-[var(--spacing-section-y)]">
+      <Container width="reading">
+        <Stack gap={6} className="text-center">
+          <Eyebrow>404</Eyebrow>
+          <Heading level={1}>Page not found</Heading>
+          <Text variant="lead" className="mx-auto max-w-md">
+            The page you are looking for does not exist or has been moved.
+          </Text>
+          <div>
+            <Button href="/" variant="secondary">
+              Back to home
+            </Button>
+          </div>
+        </Stack>
+      </Container>
+    </div>
   )
 }
