@@ -8,6 +8,7 @@ export const fontHeading = localFont({
   variable: '--font-heading',
   display: 'swap',
   preload: true,
+  adjustFontFallback: 'Times New Roman',
 })
 
 export const fontBody = localFont({
@@ -18,6 +19,7 @@ export const fontBody = localFont({
   variable: '--font-body',
   display: 'swap',
   preload: true,
+  adjustFontFallback: 'Arial',
 })
 
 export const fontMono = localFont({

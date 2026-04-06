@@ -106,7 +106,7 @@ export default function HomePage() {
             </Text>
             <div>
               <Button href="/how-i-build" variant="secondary">
-                Learn more
+                How I approach engineering
               </Button>
             </div>
           </Stack>
