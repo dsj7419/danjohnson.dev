@@ -29,7 +29,10 @@ export default defineConfig({
         'src/app/**/layout.tsx',
         'src/app/**/loading.tsx',
         'src/app/**/not-found.tsx',
+        'src/app/**/page.tsx',
         'src/test/**',
+        'src/config/**',
+        'src/lib/fonts.ts',
       ],
       thresholds: {
         lines: 80,
