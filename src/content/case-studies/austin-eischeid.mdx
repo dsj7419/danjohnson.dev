@@ -201,9 +201,9 @@ This allows search engines to understand not just pages, but relationships.
 
 Several parts of this build required real thought, not just configuration.
 
-### Modeling plant relationships without exposing IP
+### Modeling content relationships at the right level of abstraction
 
-The schema fully supports `project ↔ plant` relationships. The hard part was not the data model — it was deciding how much of that graph to expose publicly. The solution was to keep the relationships in the database for internal use and editorial workflows, but to gate their visibility in the rendered output. This required treating the public site as a deliberately filtered view of the underlying content graph, not a 1:1 projection of it.
+The system supports a rich internal graph: projects connect to plants, plants connect to other projects, collaborators connect to events, press connects to projects. Building the graph wasn't the hard part. The hard part was deciding which relationships to surface as public features versus which to keep as internal editorial structure. A site that exposes every database relationship turns into a reference manual and the work disappears under the structure. The discipline was to build the full graph for editorial workflows and curate which subsets become visible features — treating the public site as a deliberately edited view of the content, not a 1:1 projection of the schema.
 
 ### Balancing editorial flexibility with schema constraints
 
@@ -221,15 +221,15 @@ This is the work that doesn't show up in any code commit. Translating Austin's d
 
 This project involved several non-obvious decisions that materially shaped the outcome.
 
-### 1. Do not expose plant palettes publicly
+### 1. Internal richness, public clarity
 
-Technically, the system supports linking projects → plants and plants → projects. However, this was intentionally disabled in the public output.
+The system models a rich content graph. Projects, plants, collaborators, press, events — all connected internally and used by Austin and his team for editorial workflows. The public site does not expose every one of those connections as a navigable feature.
 
-**Reason:** Plant selection is a core part of Austin's competitive advantage. Exposing full palettes would reduce differentiation.
+**Reason:** The site's job is to communicate the work, not to be a database. Surfacing every internal relationship would shift visitor attention from "what did this designer build" to "what's in this database." The work would disappear under the structure.
 
-**Tradeoff:** We lose some internal linking and SEO richness, but preserve intellectual property and professional edge.
+**Tradeoff:** Less surface area for internal linking and tag-style navigation, in exchange for clarity and focus on the work itself. The internal structure remains available without constraining the visitor's experience.
 
-This was a business decision, not a technical limitation.
+This is editorial discipline applied to data architecture: build the right thing, then edit what becomes visible.
 
 ### 2. No image "protection" tactics
 
