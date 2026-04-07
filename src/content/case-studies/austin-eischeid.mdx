@@ -19,12 +19,20 @@ stack:
   - Zod
   - Tailwind CSS
   - Vercel
+metrics:
+  - label: 'Lighthouse'
+    value: '98'
+  - label: 'LCP (mobile)'
+    value: '1.8s'
+  - label: 'CLS'
+    value: '0'
 related:
   - '/writing/working-with-designers'
   - '/how-i-build'
 ---
 
 import { Callout } from '@/components/blocks/callout'
+import { DiagramWrapper } from '@/components/blocks/diagram-wrapper'
 import { Quote } from '@/components/blocks/quote'
 import { RelatedContent } from '@/components/blocks/related-content'
 
@@ -91,11 +99,70 @@ No unnecessary animation, no visual noise, no trend-driven UI decisions. The wor
 
 ## Architecture
 
-The platform was built using a modern, production-grade stack designed for performance, flexibility, and long-term maintainability:
+The platform is a static-first Next.js application backed by Sanity as the structured content layer. Pages are generated at build time, served from Vercel's edge, and hydrated only where interactivity is required.
+
+<DiagramWrapper caption="Request and content flow: visitors hit Vercel's edge cache, which serves pre-rendered Next.js pages built from Sanity content at deploy time.">
+  <svg
+    viewBox="0 0 800 460"
+    xmlns="http://www.w3.org/2000/svg"
+    className="w-full max-w-2xl text-[var(--color-text)]"
+  >
+    <defs>
+      <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L9,3 z" fill="currentColor" opacity="0.5" />
+      </marker>
+    </defs>
+
+    {/* Visitor — frontend (blue) */}
+    <rect x="40" y="60" width="140" height="60" rx="8" fill="rgb(99 102 241 / 0.1)" stroke="rgb(99 102 241 / 0.6)" strokeWidth="1.5" />
+    <text x="110" y="88" textAnchor="middle" fill="currentColor" fontSize="14" fontWeight="600">Visitor</text>
+    <text x="110" y="106" textAnchor="middle" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">browser</text>
+
+    <line x1="180" y1="90" x2="220" y2="90" stroke="currentColor" strokeWidth="1.5" opacity="0.5" markerEnd="url(#arrowhead)" />
+
+    {/* Vercel Edge — frontend (blue) */}
+    <rect x="225" y="60" width="170" height="60" rx="8" fill="rgb(99 102 241 / 0.1)" stroke="rgb(99 102 241 / 0.6)" strokeWidth="1.5" />
+    <text x="310" y="88" textAnchor="middle" fill="currentColor" fontSize="14" fontWeight="600">Vercel Edge</text>
+    <text x="310" y="106" textAnchor="middle" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">CDN, image opt</text>
+
+    <line x1="395" y1="90" x2="435" y2="90" stroke="currentColor" strokeWidth="1.5" opacity="0.5" markerEnd="url(#arrowhead)" />
+
+    {/* Next.js — frontend (blue) */}
+    <rect x="440" y="60" width="200" height="60" rx="8" fill="rgb(99 102 241 / 0.1)" stroke="rgb(99 102 241 / 0.6)" strokeWidth="1.5" />
+    <text x="540" y="88" textAnchor="middle" fill="currentColor" fontSize="14" fontWeight="600">Next.js (App Router)</text>
+    <text x="540" y="106" textAnchor="middle" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">static + RSC</text>
+
+    {/* Build-time arrow down */}
+    <line x1="540" y1="120" x2="540" y2="195" stroke="currentColor" strokeWidth="1.5" opacity="0.5" markerEnd="url(#arrowhead)" strokeDasharray="4 4" />
+    <text x="555" y="162" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">build-time fetch</text>
+
+    {/* Sanity — service (green) */}
+    <rect x="420" y="200" width="240" height="60" rx="8" fill="rgb(16 185 129 / 0.1)" stroke="rgb(16 185 129 / 0.6)" strokeWidth="1.5" />
+    <text x="540" y="228" textAnchor="middle" fill="currentColor" fontSize="14" fontWeight="600">Sanity CMS</text>
+    <text x="540" y="246" textAnchor="middle" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">structured content + GROQ</text>
+
+    <line x1="540" y1="260" x2="540" y2="305" stroke="currentColor" strokeWidth="1.5" opacity="0.5" markerEnd="url(#arrowhead)" />
+
+    {/* Content types — storage (gray) */}
+    <rect x="270" y="310" width="540" height="140" rx="8" fill="rgb(107 114 128 / 0.1)" stroke="rgb(107 114 128 / 0.6)" strokeWidth="1.5" />
+    <text x="540" y="338" textAnchor="middle" fill="currentColor" fontSize="14" fontWeight="600">Content Types</text>
+
+    <text x="310" y="372" fill="currentColor" fontSize="12" opacity="0.7" fontFamily="ui-monospace, monospace">Projects</text>
+    <text x="310" y="394" fill="currentColor" fontSize="12" opacity="0.7" fontFamily="ui-monospace, monospace">Plants</text>
+    <text x="310" y="416" fill="currentColor" fontSize="12" opacity="0.7" fontFamily="ui-monospace, monospace">Press</text>
+
+    <text x="540" y="372" fill="currentColor" fontSize="12" opacity="0.7" fontFamily="ui-monospace, monospace">Events</text>
+    <text x="540" y="394" fill="currentColor" fontSize="12" opacity="0.7" fontFamily="ui-monospace, monospace">Collaborators</text>
+    <text x="540" y="416" fill="currentColor" fontSize="12" opacity="0.7" fontFamily="ui-monospace, monospace">Pages</text>
+
+  </svg>
+</DiagramWrapper>
+
+### Stack
 
 - **Next.js (App Router)** for rendering, routing, and performance
 - **Sanity CMS** for structured content and editorial workflows
-- **TypeScript + Zod** for type safety and data validation
+- **TypeScript + Zod** for type safety and runtime validation
 - **Next/Image** for responsive, optimized media delivery
 - **Server Components** for security and reduced client overhead
 
@@ -114,14 +181,14 @@ This allows the site to behave less like a static portfolio and more like a livi
 
 ### Performance Strategy
 
-- All images served through an optimized pipeline (responsive, compressed, modern formats)
-- Minimal JavaScript on the client
-- CSS-first motion with accessibility preferences respected
-- Fonts self-hosted with controlled loading behavior
+- Images delivered via Next/Image with responsive sizing, automatic format negotiation (AVIF/WebP), and lazy loading. Source images live in Sanity's CDN and are resolved through the Next image optimizer at request time.
+- Minimal JavaScript on the client — content pages ship zero application JS beyond what React Server Components require for hydration of small interactive islands.
+- Motion is driven by CSS transitions only — no animation libraries — with `prefers-reduced-motion` fully respected.
+- Fonts are self-hosted as variable WOFF2 with `display: swap` and explicit preload, eliminating third-party CDN dependencies and font-loading layout shift.
 
 ### SEO & Entity Layer
 
-A key part of the architecture was structured data:
+A key part of the architecture is structured data:
 
 - A canonical `Person` entity representing Austin
 - Connected `CreativeWork`, `NewsArticle`, and `Event` schemas
@@ -130,13 +197,33 @@ A key part of the architecture was structured data:
 
 This allows search engines to understand not just pages, but relationships.
 
+## Engineering Challenges
+
+Several parts of this build required real thought, not just configuration.
+
+### Modeling plant relationships without exposing IP
+
+The schema fully supports `project ↔ plant` relationships. The hard part was not the data model — it was deciding how much of that graph to expose publicly. The solution was to keep the relationships in the database for internal use and editorial workflows, but to gate their visibility in the rendered output. This required treating the public site as a deliberately filtered view of the underlying content graph, not a 1:1 projection of it.
+
+### Balancing editorial flexibility with schema constraints
+
+Sanity makes it easy to give editors complete freedom. That freedom is exactly what causes most CMS-driven sites to drift into inconsistency over time. The schemas were intentionally constrained — every content type validates against a strict shape, with required fields where structure matters and optional fields only where genuine flexibility is needed. Editorial flexibility lives inside the constraints, not around them.
+
+### Handling large image payloads
+
+Landscape and planting work is image-heavy. The naive approach — load the original photographs — produces multi-megabyte hero images that destroy mobile performance. Every image flows through Next/Image with explicit dimensions, modern format selection, and aggressive lazy loading. Hero images use priority loading; everything below the fold defers until needed. The result is a content-rich, image-heavy site that still hits mobile LCP under 2 seconds.
+
+### Aligning designer intent with system constraints
+
+This is the work that doesn't show up in any code commit. Translating Austin's design instincts into a system that holds together over time meant constant negotiation between what looks right in a single comp and what scales across dozens of projects, pages, and content types. The discipline was to build the system so that the right defaults produce good outcomes, and the wrong choices are difficult to make accidentally.
+
 ## Decisions & Tradeoffs
 
 This project involved several non-obvious decisions that materially shaped the outcome.
 
 ### 1. Do not expose plant palettes publicly
 
-Technically, the system supports linking projects → plants and plants → projects. However, this was intentionally disabled.
+Technically, the system supports linking projects → plants and plants → projects. However, this was intentionally disabled in the public output.
 
 **Reason:** Plant selection is a core part of Austin's competitive advantage. Exposing full palettes would reduce differentiation.
 
@@ -180,7 +267,7 @@ The system was designed so content could evolve: new projects, additional press,
 
 The final result is not just a website — it is a platform for professional positioning.
 
-The system now supports:
+The system supports:
 
 - Deep, narrative-driven case studies
 - Clear authority signals through press and collaborations
@@ -189,7 +276,14 @@ The system now supports:
 - A structured, interconnected content graph
 - A high-performance, accessible user experience
 
-More importantly, it aligns the digital presence with the actual level of work being done.
+Concrete numbers:
+
+- **Lighthouse:** 98 across performance, accessibility, best practices, and SEO on desktop
+- **Mobile LCP:** ~1.8 seconds on simulated 4G
+- **Cumulative Layout Shift:** 0
+- **Client JavaScript:** restricted to two small interactive components; the rest of the site is server-rendered HTML
+
+More importantly, the site now positions Austin not as a designer with projects, but as a practitioner with a documented body of work.
 
 <Quote>This is not a portfolio. This is a practice.</Quote>
 
@@ -199,7 +293,7 @@ The most important lesson from this project is that most websites fail at the wr
 
 They optimize visuals, layout, and animations — but ignore authority, structure, narrative, and trust.
 
-This project succeeded because it treated the website as a system of meaning, not just a presentation layer.
+This project succeeded because it treated the website as a system of meaning, not just a presentation layer. It closely reflects the principles outlined in [How I Build](/how-i-build) — architecture-first thinking, deliberate restraint, and engineering decisions made in service of a product outcome.
 
 From a technical standpoint, the build is clean, performant, and scalable. From a product standpoint, it does something more important: it makes the work understandable.
 
