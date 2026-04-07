@@ -38,7 +38,7 @@ import { RelatedContent } from '@/components/blocks/related-content'
 
 ## Overview
 
-This project was not a traditional portfolio build.
+This project was not a traditional portfolio build. It was delivered as a full system redesign — content model, frontend architecture, and editorial workflow — not just a visual refresh.
 
 The objective was to design and engineer a digital authority platform for a planting designer operating at a high level of landscape architecture — someone collaborating with institutions, public gardens, and internationally recognized designers.
 
@@ -99,7 +99,7 @@ No unnecessary animation, no visual noise, no trend-driven UI decisions. The wor
 
 ## Architecture
 
-The platform is a static-first Next.js application backed by Sanity as the structured content layer. Pages are generated at build time, served from Vercel's edge, and hydrated only where interactivity is required.
+The platform is a static-first Next.js application backed by Sanity as the structured content layer. Pages are statically generated at build time, served from Vercel's edge, and hydrated only where interactivity is required.
 
 <DiagramWrapper caption="Request and content flow: visitors hit Vercel's edge cache, which serves pre-rendered Next.js pages built from Sanity content at deploy time.">
   <svg
