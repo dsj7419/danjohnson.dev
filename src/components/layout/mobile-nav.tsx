@@ -16,6 +16,13 @@ type MobileNavProps = {
 export function MobileNav({ items }: MobileNavProps) {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
+  const [lastPathname, setLastPathname] = useState(pathname)
+
+  // Close menu on any route change (site name link, internal links, browser nav)
+  if (pathname !== lastPathname) {
+    setLastPathname(pathname)
+    setIsOpen(false)
+  }
 
   const toggle = useCallback(() => {
     setIsOpen((prev) => !prev)

@@ -1,0 +1,106 @@
+---
+title: 'Austin Eischeid Website'
+description: 'TODO: One-sentence summary of the project and its purpose.'
+date: '2026-05-15'
+tags:
+  - product-engineering
+  - collaboration
+  - performance
+featured: true
+draft: true
+role: 'Lead Engineer'
+client: 'Austin Eischeid'
+stack:
+  - Next.js
+  - TypeScript
+  - Sanity
+  - Tailwind CSS
+  - Vercel
+related:
+  - '/writing/working-with-designers'
+  - '/how-i-build'
+---
+
+import { Callout } from '@/components/blocks/callout'
+import { Figure } from '@/components/blocks/figure'
+import { DiagramWrapper } from '@/components/blocks/diagram-wrapper'
+import { Quote } from '@/components/blocks/quote'
+import { RelatedContent } from '@/components/blocks/related-content'
+
+## Overview
+
+{/_ What the project is, who it's for, your role.
+Keep this short and clear — a non-technical reader should understand the context immediately. _/}
+
+## The Problem
+
+{/_ What made this project difficult or interesting?
+Easy projects do not demonstrate expertise.
+Show why this required serious thinking. _/}
+
+## Constraints
+
+{/_ Real-world limits: timeline, budget, designer expectations, performance targets, hosting,
+accessibility, content management needs, browser support, etc.
+This signals professional engineering maturity. _/}
+
+## Approach
+
+{/_ High-level reasoning. How you decided to attack the problem.
+Architecture-first thinking, not tools-first. Why this approach over alternatives. _/}
+
+## Architecture
+
+{/_ System diagram + explanation. Components, data flow, services, CMS integration.
+This is where DiagramWrapper goes. _/}
+
+{/\* <DiagramWrapper caption="Austin Eischeid Website — system architecture">
+
+  <img src="/images/case-studies/austin-eischeid/architecture.svg" alt="System architecture diagram" />
+</DiagramWrapper> */}
+
+## Engineering Challenges
+
+{/_ The hardest technical parts, explained honestly.
+State management, content modeling, performance optimization, accessibility,
+designer-engineer translation, anything that took real thought. _/}
+
+## Decisions & Tradeoffs
+
+{/\* THIS IS THE MOST IMPORTANT SECTION.
+For each major decision: - What options were considered - Why this approach was selected - What tradeoffs were accepted - What went wrong - What you would do differently next time
+
+    This is what separates senior engineering from mid-level execution.
+    Show judgment, not just choices. */}
+
+## Security & Performance
+
+{/_ Lighthouse scores, optimization strategy, CDN, image handling,
+font loading, security headers, accessibility verification.
+Concrete numbers and practices. _/}
+
+## Outcome
+
+{/_ Results, impact, client satisfaction, launch quality.
+Connect engineering decisions to real-world value. _/}
+
+## Reflection
+
+{/_ What you learned. What turned out to be more important than expected.
+What you would do differently next time. What this project taught you
+about working with designers / building in this space. _/}
+
+<RelatedContent
+  items={[
+    {
+      path: '/writing/working-with-designers',
+      title: 'Working With Designers: Turning Vision Into Reality',
+      type: 'article',
+    },
+    {
+      path: '/how-i-build',
+      title: 'How I Build',
+      type: 'article',
+    },
+  ]}
+/>
