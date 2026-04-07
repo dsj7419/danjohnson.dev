@@ -1,0 +1,189 @@
+---
+title: 'Working With Designers: Turning Vision Into Reality'
+description: "Most engineers approach designer collaboration as a translation problem. It's actually a partnership problem."
+date: '2026-04-06'
+tags:
+  - collaboration
+  - engineering-philosophy
+  - design
+category: 'lessons-learned'
+featured: true
+draft: false
+related:
+  - '/work/austin-eischeid'
+  - '/how-i-build'
+---
+
+import { Callout } from '@/components/blocks/callout'
+import { RelatedContent } from '@/components/blocks/related-content'
+
+Most engineers think working with designers is a translation problem.
+
+Take the Figma file. Convert it into code. Match spacing, typography, layout. Ship it.
+
+That framing sounds reasonable. It's also the reason most design-heavy products feel slightly off — like something got lost somewhere between intention and implementation.
+
+The real problem isn't translation. It's partnership.
+
+Translation is what happens _after_ you've gotten the partnership right.
+
+## Designers Are Usually Right
+
+This is the first thing that feels wrong until you've seen it enough times.
+
+When a designer pushes for something that feels unnecessary, subtle, or difficult to justify from a purely technical standpoint — they're usually right.
+
+Not always. But far more often than most engineers are comfortable admitting.
+
+Designers spend years developing an instinct for hierarchy, rhythm, balance, and restraint. They notice when something feels heavy, or rushed, or slightly out of alignment — even if they can't immediately explain it in engineering terms.
+
+Engineers, on the other hand, are trained to optimize for correctness, efficiency, and feasibility.
+
+Both are valuable. But they're not the same.
+
+The mistake is assuming that because something is easier to build, it's the correct decision. It usually isn't.
+
+## The Translation Problem Isn't Language — It's Intent
+
+When a designer asks for something that seems "impossible," the instinct is to respond with constraints:
+
+> "We can't do that because…"
+
+That's almost always the wrong response.
+
+Not because constraints don't exist — but because the request is rarely about the literal implementation. It's about intent.
+
+When a designer says _"this needs to feel lighter,"_ they're not prescribing a CSS property. They're describing a goal.
+
+If you treat it like a literal instruction, you'll either reject it or implement it poorly.
+
+If you treat it like intent, you start asking better questions:
+
+- What makes it feel heavy right now?
+- Is it spacing? Color? Density? Motion?
+- What are we actually trying to achieve?
+
+That's the difference between translating instructions and solving the right problem.
+
+## "Yes, and how" — not "No, but here's why"
+
+You can tell a lot about an engineer by how they respond to design requests.
+
+Junior engineers catalog obstacles:
+
+- "That's not how this component works"
+- "That would break responsiveness"
+- "That's going to be expensive to build"
+
+Senior engineers look at the same situation and ask a different question:
+
+> "How do we get as close to this as possible?"
+
+Same constraints. Completely different posture.
+
+The goal isn't blind agreement. It's alignment around outcome.
+
+Sometimes the answer really is "we can't do that exactly." But the conversation shouldn't stop there. It should continue:
+
+- What part of this matters most?
+- What's the closest viable version?
+- What tradeoffs are acceptable?
+
+The difference isn't technical skill. It's ownership.
+
+## Code Is a Translation, Not the Truth
+
+One of the most subtle shifts — and one of the most important — is this:
+
+The Figma file isn't the design. The code isn't the design. Both are representations.
+
+The design is the intent behind them.
+
+Engineers who treat code as the source of truth tend to push back on anything that doesn't map cleanly to their system. Designers who treat Figma as the source of truth tend to resist necessary constraints of the medium.
+
+Both are defending a tool instead of the outcome.
+
+<Callout variant="insight" title="The shift">
+  When both sides align on intent as the source of truth, conversations stop
+  being about "this is wrong" or "this doesn't match" and start being about
+  "does this achieve what we're trying to do?" That's where collaboration
+  actually begins.
+</Callout>
+
+## Honor the Polish, Negotiate the Structure
+
+Not everything in a design carries the same weight. The problem is that it's not always obvious which parts matter most.
+
+Over time, a pattern emerges.
+
+**Things that usually matter more than they seem:**
+
+- Typography scale and weight
+- Spacing rhythm
+- Visual hierarchy
+- Motion timing
+- Density and breathing room
+
+These are where the _feel_ of the product lives.
+
+**Things that usually matter less:**
+
+- Component naming
+- File structure
+- Internal abstractions
+- State management choices
+
+These are invisible to the user.
+
+The skill is knowing what to protect and what to adapt.
+
+If you compromise the polish, the product feels off — even if everything is technically correct. If you compromise the structure, the product can still feel right — even if the implementation isn't perfect.
+
+Most engineers get this backwards early in their careers.
+
+## The Handoff Is a Myth
+
+The idea that design happens first, then gets "handed off" to engineering, is one of the most persistent and damaging assumptions in product work.
+
+It creates a clean boundary. It also produces worse outcomes.
+
+The best work doesn't happen in phases. It happens in overlap.
+
+- Designers see the product as it's being built
+- Engineers are part of design conversations
+- Adjustments happen continuously, not after the fact
+
+This isn't about process. It's about proximity.
+
+The closer the collaboration, the less gets lost. The further apart the work is, the more you rely on documents to carry meaning — and documents are a poor substitute for shared context.
+
+The handoff model optimizes for organization. It does not optimize for quality.
+
+---
+
+What people call a "technical partner" isn't a role. It's a posture.
+
+It's the difference between implementing what was given and taking responsibility for what gets shipped.
+
+It's understanding that the job isn't to convert designs into code. It's to help turn a vision into something real — without losing what made it compelling in the first place.
+
+If you want to see what that looks like in practice, the [Austin Eischeid case study](/work/austin-eischeid) is a concrete example of this kind of collaboration — where design intent, engineering decisions, and editorial structure were developed together, not sequentially.
+
+And if you're curious how I approach this more broadly, I've written about that in [How I Build](/how-i-build).
+
+Because at a certain level, the work isn't about tools or frameworks. It's about how you show up to the problem.
+
+<RelatedContent
+  items={[
+    {
+      path: '/work/austin-eischeid',
+      title: 'Austin Eischeid — Authority Platform & Editorial System',
+      type: 'case-study',
+    },
+    {
+      path: '/how-i-build',
+      title: 'How I Build',
+      type: 'article',
+    },
+  ]}
+/>
