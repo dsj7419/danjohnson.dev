@@ -20,12 +20,12 @@ stack:
   - Tailwind CSS
   - Vercel
 metrics:
-  - label: 'Lighthouse'
-    value: '98'
-  - label: 'LCP (mobile)'
-    value: '1.8s'
+  - label: 'Accessibility'
+    value: '100'
   - label: 'CLS'
     value: '0'
+  - label: 'Security'
+    value: 'A'
 related:
   - '/writing/working-with-designers'
   - '/how-i-build'
@@ -276,12 +276,16 @@ The system supports:
 - A structured, interconnected content graph
 - A high-performance, accessible user experience
 
-Concrete numbers:
+Concrete results from the production audit pass:
 
-- **Lighthouse:** 98 across performance, accessibility, best practices, and SEO on desktop
-- **Mobile LCP:** ~1.8 seconds on simulated 4G
-- **Cumulative Layout Shift:** 0
-- **Client JavaScript:** restricted to two small interactive components; the rest of the site is server-rendered HTML
+- **Lighthouse Accessibility: 100/100** across all eight page types, verified against WCAG 2.1 AA. Zero critical blockers, full keyboard navigation, contrast ratios meeting AAA on primary text.
+- **Lighthouse Best Practices & SEO: 100/100** across all pages. Full structured data coverage (Organization, Person, CreativeWork, BreadcrumbList) and a 30-entry sitemap.
+- **Cumulative Layout Shift: 0** on every page. Achieved by migrating to `next/font` with size-adjusted fallback metrics, eliminating font-swap shift.
+- **Total Blocking Time: 20–150ms** across all pages — well under the 200ms target.
+- **SecurityHeaders.com: Grade A** with HSTS preload, scoped CSP (`default-src 'self'`), `Referrer-Policy`, `Permissions-Policy`, and `frame-ancestors` for Sanity Studio embedding.
+- **28/28 legacy URL redirects** preserving SEO equity from the previous site, all permanent (HTTP 308).
+
+Performance is the most nuanced number. On desktop, FCP is 0.5s and LCP is 1.2s. On simulated Slow 4G mobile, LCP runs 3.1s on text-dominant pages and up to 6.1s on the most image-heavy project pages. This is a deliberate tradeoff: the site is a visual portfolio where the work is the product, and degrading image quality to optimize a synthetic mobile metric would harm the brand more than it helps. Every optimization that doesn't compromise the photography is in place — Next/Image with format negotiation, priority on heroes, lazy loading below the fold, LQIP blur placeholders, Sanity CDN delivery, self-hosted fonts.
 
 More importantly, the site now positions Austin not as a designer with projects, but as a practitioner with a documented body of work.
 
