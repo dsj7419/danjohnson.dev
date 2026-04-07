@@ -1,19 +1,22 @@
 ---
-title: 'Austin Eischeid Website'
-description: 'TODO: One-sentence summary of the project and its purpose.'
+title: 'Austin Eischeid — Authority Platform & Editorial System'
+description: 'Design and development of a digital authority platform for a planting designer working at the highest level of landscape architecture.'
 date: '2026-05-15'
 tags:
   - product-engineering
-  - collaboration
+  - editorial-systems
   - performance
+  - seo
+  - accessibility
 featured: true
 draft: true
-role: 'Lead Engineer'
+role: 'Senior PM / Full-Stack Engineer'
 client: 'Austin Eischeid'
 stack:
-  - Next.js
+  - Next.js (App Router)
   - TypeScript
   - Sanity
+  - Zod
   - Tailwind CSS
   - Vercel
 related:
@@ -22,73 +25,185 @@ related:
 ---
 
 import { Callout } from '@/components/blocks/callout'
-import { Figure } from '@/components/blocks/figure'
-import { DiagramWrapper } from '@/components/blocks/diagram-wrapper'
 import { Quote } from '@/components/blocks/quote'
 import { RelatedContent } from '@/components/blocks/related-content'
 
 ## Overview
 
-{/_ What the project is, who it's for, your role.
-Keep this short and clear — a non-technical reader should understand the context immediately. _/}
+This project was not a traditional portfolio build.
 
-## The Problem
+The objective was to design and engineer a digital authority platform for a planting designer operating at a high level of landscape architecture — someone collaborating with institutions, public gardens, and internationally recognized designers.
 
-{/_ What made this project difficult or interesting?
-Easy projects do not demonstrate expertise.
-Show why this required serious thinking. _/}
+Most portfolio sites present images. This needed to present credibility, thinking, and proof.
 
-## Constraints
+The result is a system that functions as:
 
-{/_ Real-world limits: timeline, budget, designer expectations, performance targets, hosting,
-accessibility, content management needs, browser support, etc.
-This signals professional engineering maturity. _/}
+- a case study archive
+- a botanical knowledge base
+- a press and recognition layer
+- an event and speaking platform
+- and a structured data-backed entity on the web
+
+All built on a modern, performance-first stack with a strong emphasis on editorial control, accessibility, and long-term scalability.
+
+## Problem
+
+Austin's existing web presence — like most in the field — suffered from a common set of issues:
+
+- Work was presented as image galleries, not as documented case studies
+- There was no clear authority signal despite high-level collaborations
+- Press, events, and projects existed, but were not connected into a coherent narrative
+- There was no structured representation of Austin as a recognizable entity on the web
+- The site did not support how landscape architecture is actually evaluated: longevity, seasonal performance, planting strategy, collaboration context
+
+<Callout variant="insight" title="The deeper problem">
+  At a deeper level, the problem wasn't "design." It was that the site did not
+  reflect the real value of the work.
+</Callout>
 
 ## Approach
 
-{/_ High-level reasoning. How you decided to attack the problem.
-Architecture-first thinking, not tools-first. Why this approach over alternatives. _/}
+The approach shifted the project from a "website build" to a system design problem.
+
+Instead of asking "how should this look?" the guiding question became: **"How does a serious design practice establish authority, credibility, and trust digitally?"**
+
+From that, several principles were defined:
+
+### 1. Case studies over galleries
+
+Every project needed to function as a narrative: context, approach, planting strategy, outcome over time.
+
+### 2. Authority must be visible immediately
+
+Institutional work, collaborations, and press needed to be surfaced clearly and early.
+
+### 3. Content must be interconnected
+
+Projects, press, events, and plants should reinforce each other — not exist as isolated pages.
+
+### 4. Editorial control over hardcoding
+
+The system needed to allow Austin and his team to evolve the site over time without engineering bottlenecks.
+
+### 5. Restraint over spectacle
+
+No unnecessary animation, no visual noise, no trend-driven UI decisions. The work should carry the weight.
 
 ## Architecture
 
-{/_ System diagram + explanation. Components, data flow, services, CMS integration.
-This is where DiagramWrapper goes. _/}
+The platform was built using a modern, production-grade stack designed for performance, flexibility, and long-term maintainability:
 
-{/\* <DiagramWrapper caption="Austin Eischeid Website — system architecture">
+- **Next.js (App Router)** for rendering, routing, and performance
+- **Sanity CMS** for structured content and editorial workflows
+- **TypeScript + Zod** for type safety and data validation
+- **Next/Image** for responsive, optimized media delivery
+- **Server Components** for security and reduced client overhead
 
-  <img src="/images/case-studies/austin-eischeid/architecture.svg" alt="System architecture diagram" />
-</DiagramWrapper> */}
+### Content Model
 
-## Engineering Challenges
+The system is driven by structured content types:
 
-{/_ The hardest technical parts, explained honestly.
-State management, content modeling, performance optimization, accessibility,
-designer-engineer translation, anything that took real thought. _/}
+- **Projects** — case studies
+- **Plants** — knowledge base
+- **Press** — editorial validation
+- **Events** — talks and visibility
+- **Collaborators** — authority and network
+- **Global pages** — About, Process, Homepage
+
+This allows the site to behave less like a static portfolio and more like a living editorial system.
+
+### Performance Strategy
+
+- All images served through an optimized pipeline (responsive, compressed, modern formats)
+- Minimal JavaScript on the client
+- CSS-first motion with accessibility preferences respected
+- Fonts self-hosted with controlled loading behavior
+
+### SEO & Entity Layer
+
+A key part of the architecture was structured data:
+
+- A canonical `Person` entity representing Austin
+- Connected `CreativeWork`, `NewsArticle`, and `Event` schemas
+- Sitemap and crawler governance strategy
+- Clean metadata and indexing control
+
+This allows search engines to understand not just pages, but relationships.
 
 ## Decisions & Tradeoffs
 
-{/\* THIS IS THE MOST IMPORTANT SECTION.
-For each major decision: - What options were considered - Why this approach was selected - What tradeoffs were accepted - What went wrong - What you would do differently next time
+This project involved several non-obvious decisions that materially shaped the outcome.
 
-    This is what separates senior engineering from mid-level execution.
-    Show judgment, not just choices. */}
+### 1. Do not expose plant palettes publicly
 
-## Security & Performance
+Technically, the system supports linking projects → plants and plants → projects. However, this was intentionally disabled.
 
-{/_ Lighthouse scores, optimization strategy, CDN, image handling,
-font loading, security headers, accessibility verification.
-Concrete numbers and practices. _/}
+**Reason:** Plant selection is a core part of Austin's competitive advantage. Exposing full palettes would reduce differentiation.
+
+**Tradeoff:** We lose some internal linking and SEO richness, but preserve intellectual property and professional edge.
+
+This was a business decision, not a technical limitation.
+
+### 2. No image "protection" tactics
+
+Common approaches like watermarks, right-click blocking, and overlays were explicitly rejected.
+
+**Reason:** They degrade user experience, signal insecurity, and are easily bypassed.
+
+Instead, the system relies on controlled image resolution, optimized delivery, and strong attribution and context — authority through provenance.
+
+**Tradeoff:** Images can still be saved, but the experience remains clean and professional.
+
+### 3. Allow discovery, block training
+
+Crawler strategy was carefully defined: allow search engines and AI search tools (discovery) while blocking AI training crawlers where possible.
+
+**Reason:** The site is meant to be found, cited, and explored — but not silently absorbed into training datasets.
+
+**Tradeoff:** Slightly more complexity in crawler governance in exchange for better control over how content is used.
+
+### 4. Restraint over visual complexity
+
+No animation libraries. No heavy transitions. No unnecessary UI patterns.
+
+**Reason:** In this domain, excessive motion undermines credibility.
+
+**Tradeoff:** Less "flash," more clarity, focus, and longevity.
+
+### 5. Editorial system over static build
+
+The system was designed so content could evolve: new projects, additional press, future events, expanded plant database.
+
+**Tradeoff:** More upfront complexity in exchange for long-term flexibility and independence.
 
 ## Outcome
 
-{/_ Results, impact, client satisfaction, launch quality.
-Connect engineering decisions to real-world value. _/}
+The final result is not just a website — it is a platform for professional positioning.
+
+The system now supports:
+
+- Deep, narrative-driven case studies
+- Clear authority signals through press and collaborations
+- A botanical knowledge layer reinforcing expertise
+- Event and speaking visibility
+- A structured, interconnected content graph
+- A high-performance, accessible user experience
+
+More importantly, it aligns the digital presence with the actual level of work being done.
+
+<Quote>This is not a portfolio. This is a practice.</Quote>
 
 ## Reflection
 
-{/_ What you learned. What turned out to be more important than expected.
-What you would do differently next time. What this project taught you
-about working with designers / building in this space. _/}
+The most important lesson from this project is that most websites fail at the wrong layer.
+
+They optimize visuals, layout, and animations — but ignore authority, structure, narrative, and trust.
+
+This project succeeded because it treated the website as a system of meaning, not just a presentation layer.
+
+From a technical standpoint, the build is clean, performant, and scalable. From a product standpoint, it does something more important: it makes the work understandable.
+
+And in a field where the difference between good and exceptional is often invisible to non-experts, that is where the real value lies.
 
 <RelatedContent
   items={[
