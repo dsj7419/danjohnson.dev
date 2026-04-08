@@ -1,5 +1,7 @@
 import Link from 'next/link'
 
+import { formatPublishDate } from '@/lib/dates'
+
 type ArticleEntryProps = {
   title: string
   description: string
@@ -20,11 +22,7 @@ export function ArticleEntry({
   readingTime,
   className = '',
 }: ArticleEntryProps) {
-  const formattedDate = new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
+  const formattedDate = formatPublishDate(date)
 
   return (
     <article

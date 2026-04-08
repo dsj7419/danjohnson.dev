@@ -1,3 +1,5 @@
+import { formatPublishDate } from '@/lib/dates'
+
 type MetaItem = {
   label: string
   value: string
@@ -22,11 +24,7 @@ export function CaseStudyMeta({
   teamSize,
   className = '',
 }: CaseStudyMetaProps) {
-  const formattedDate = new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
+  const formattedDate = formatPublishDate(date)
 
   const items: MetaItem[] = [
     { label: 'Role', value: role },

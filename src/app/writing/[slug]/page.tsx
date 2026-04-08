@@ -11,6 +11,7 @@ import { Section } from '@/components/primitives/section'
 import { Stack } from '@/components/primitives/stack'
 import { Text } from '@/components/primitives/text'
 import { getAllArticles, getArticle } from '@/lib/content'
+import { formatPublishDate } from '@/lib/dates'
 import { buildContentMetadata } from '@/lib/metadata'
 import { articleJsonLd } from '@/lib/structured-data'
 
@@ -47,11 +48,7 @@ export default async function ArticlePage({ params }: PageProps) {
 
   const { default: Content } = await import(`@/content/writing/${slug}.mdx`)
 
-  const formattedDate = new Date(entry.frontmatter.date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
+  const formattedDate = formatPublishDate(entry.frontmatter.date)
 
   const hasUpdate =
     entry.frontmatter.updatedAt !== undefined &&
@@ -82,15 +79,7 @@ export default async function ArticlePage({ params }: PageProps) {
             <Text variant="small">
               {formattedDate} &middot; {entry.readingTime} min read
               {hasUpdate && (
-                <>
-                  {' '}
-                  &middot; Updated{' '}
-                  {new Date(entry.frontmatter.updatedAt!).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
-                </>
+                <> &middot; Updated {formatPublishDate(entry.frontmatter.updatedAt!)}</>
               )}
             </Text>
           </Stack>
