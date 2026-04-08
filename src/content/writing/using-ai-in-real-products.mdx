@@ -1,0 +1,110 @@
+---
+title: 'Using AI in Real Products, Not Just Demos'
+description: 'AI in a demo is a magic trick. AI in production is an engineering subsystem.'
+date: '2026-03-18'
+tags:
+  - ai
+  - engineering-philosophy
+  - systems
+category: 'ai'
+featured: true
+draft: false
+related:
+  - '/work/chimera'
+  - '/writing/working-with-designers'
+  - '/how-i-build'
+---
+
+import { Callout } from '@/components/blocks/callout'
+import { RelatedContent } from '@/components/blocks/related-content'
+
+Most AI products are not really products yet.
+
+They are demos with better lighting.
+
+A demo is built around the prompt. A real product is built around everything that happens when the prompt fails.
+
+That distinction matters more than most teams want to admit. In a demo, the interesting moment is the output. In a real system, the interesting moments are everything around it: what happens when the provider rate-limits, when the output format drifts, when the model is wrong in a way that looks plausible, when the same request suddenly costs three times more than expected, when a background job dies quietly, when the result needs to be explained to someone who did not write the prompt, and when trust matters more than novelty.
+
+That is the difference I think about most when I think about AI in real products.
+
+The easy part of modern AI is getting a model to do something impressive once. The harder part is turning that behavior into a dependable subsystem inside a product people can actually rely on. That is engineering work, not prompt work. And it is the part that still gets underestimated.
+
+The model is rarely the whole product. Usually, it is one component in a larger system that has to do several harder things at the same time: constrain output, preserve structure, handle failure, control cost, surface evidence, and remain understandable under pressure. When teams skip that layer, they often end up with something that feels magical in a walkthrough and fragile everywhere else.
+
+I have seen that pattern enough times that I no longer think the most important AI decisions happen at the model boundary. The most important decisions are usually around it.
+
+## Failure Is a Design Input
+
+A lot of teams still treat failure handling as the part you add after the feature works. That is backwards. In AI systems, failure modes are part of the feature. If a provider times out, if the model emits malformed structure, if a background stage hangs, if a result cannot be verified, if a retry introduces duplicate behavior, those are not edge cases. They are normal operating conditions.
+
+Good AI product work starts by assuming the model will sometimes be late, wrong, expensive, inconsistent, or opaque. Once you accept that, your architecture changes. You stop asking only, "Can the model do this?" and start asking, "What has to be true for this to be safe, operable, and trustworthy when it doesn't?"
+
+That shift tends to separate serious systems from impressive ones.
+
+## Cost Is Architecture
+
+Most teams talk about cost after the architecture already exists. By then, it is often too late. The expensive part is not always the model itself. It is the habit of letting cost remain invisible while the system grows around it. If a product does not know where its spending gates actually sit, it does not have cost control. It has hope.
+
+In real systems, cost has to be architectural. It needs enforcement points, not just dashboards. It needs a difference between hard stops and soft degradation. It needs clarity about which stages can be estimated before execution and which ones can only be controlled mid-run. Most importantly, it needs honesty. Providers do not behave uniformly enough to justify pretend symmetry. Good engineering reflects that instead of smoothing it over.
+
+## Evaluation Is Part of the Product
+
+A surprising amount of AI product work still treats evaluation as taste. Did the answer look good? Did it feel plausible? Did someone on the team like the output? That may be enough for a prototype. It is not enough for a system that is going to produce work other people depend on.
+
+Evaluation becomes more meaningful when it is built into the product itself. Sometimes that means structure: the output must conform to a format, a schema, or a set of explicit constraints. Sometimes it means staged verification — a cheap deterministic pass that checks whether every factual claim resolves to stored evidence, and then a second, more expensive semantic pass that runs only if the first one passes, and only on what survived. The first catches the structural failures before the second has to spend any model budget on them. In Project Chimera, that meant a deterministic coverage gate first, followed by a second semantic-support pass that only ran on claims that survived the structural check. Sometimes it means refusing to advance content that cannot be explained. The specifics vary, but the principle is the same: if the system matters, evaluation cannot be improvised.
+
+## Trust Is a Property, Not a Tone
+
+This is where AI products usually get vague. They say the system is grounded, or reliable, or safe, or enterprise-ready. Those are often marketing words covering a missing mechanism.
+
+<Callout variant="insight">
+  Trust in software is not a tone. It is a property created by design decisions.
+</Callout>
+
+In some systems, trust comes from deterministic constraints. In others, from auditability. In others, from [provenance](/work/chimera) — the ability to show where something came from and why the system believes it. What matters is not which mechanism you choose. What matters is whether the mechanism is real.
+
+If a product makes claims but cannot show its work, trust is fragile. If it can surface evidence, explain stage outcomes, and make failure visible instead of silent, it starts becoming something more durable.
+
+That is one of the reasons I think provenance will matter more over time. Not because every product needs a public evidence interface, but because more products will need a way to say, with precision, "Here is why this result exists." As generated output becomes easier and cheaper to produce, the scarce thing will not be generation. It will be credibility.
+
+## The Model Should Not Own the Product
+
+One of the easiest mistakes in AI product work is giving the model too much responsibility. Models are good at some things and weak at others. They are not schedulers. They are not state machines. They are not rollout plans. They are not operational governance. They are not a substitute for queue design, retry policy, observability, or interface discipline.
+
+When teams forget that, the model absorbs responsibilities that should have lived elsewhere in the system. The result is usually a product that feels clever but behaves inconsistently. When the boundaries are cleaner, the opposite happens: the model gets used where it is strong, and the surrounding system absorbs the load-bearing work of reliability.
+
+That is the version of AI engineering I find most interesting.
+
+Not because it is louder. Because it is real.
+
+A real AI product is not the one with the most dramatic first impression. It is the one that still makes sense after the tenth failure mode, the hundredth run, the first cost scare, the first incident review, the first hard question from someone who wants to know why the system should be trusted.
+
+That is why I think the interesting engineering problems in AI are around the model, not just inside it.
+
+The prompt matters. Model choice matters. Provider quality matters. But those are only part of the story. The rest of the story is architecture: what gets queued, what gets persisted, what gets verified, what gets rejected, what gets explained, what gets surfaced, what gets retried, what gets capped, and what gets deferred until it is ready to be true.
+
+That is where demos end and products begin.
+
+And that is still where a lot of the best work is.
+
+<RelatedContent
+  items={[
+    {
+      path: '/work/chimera',
+      title:
+        'Project Chimera — Building an Editorial System Where Every Sentence Is Accountable',
+      type: 'case-study',
+    },
+    {
+      path: '/writing/working-with-designers',
+      title: 'Working With Designers: Turning Vision Into Reality',
+      type: 'article',
+    },
+    {
+      path: '/how-i-build',
+      title: 'How I Build',
+      type: 'article',
+    },
+  ]}
+/>
