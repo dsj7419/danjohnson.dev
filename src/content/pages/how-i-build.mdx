@@ -5,30 +5,44 @@ description: 'Architecture-first thinking, test-driven development, and AI-augme
 
 ## Architecture First
 
-Every project starts with understanding the system before writing code. I map data flow, define boundaries, and design the architecture before choosing tools or writing implementations.
+Every system starts with understanding the problem at the architecture layer — not the framework layer. Before any code gets written, I want to know: what is the data flow, where are the boundaries, what changes over time, what does not, and what invariants have to hold.
 
-This produces systems that are easier to test, easier to maintain, easier to extend, and easier to hand off.
+On the [Austin Eischeid platform](/work/austin-eischeid), that question turned a "designer portfolio build" into a structured content system — projects, plants, press, collaborators, events — designed so the public site stays focused on the work while the internal content graph supports editorial workflows that will keep evolving for years. The hard part was not building the graph. It was deciding which relationships to surface as public features and which to keep as internal structure, so the work would not disappear under the database.
+
+Frameworks come second. Architecture decides which framework is appropriate for the system, not the other way around.
 
 ## Test-Driven Development
 
-I write tests before production code. Every function, every component, every feature starts with a failing test that describes the desired behavior. The implementation is the minimum code that makes the test pass.
+I write tests before production code. Every function, every component, every feature starts as a failing test that describes the desired behavior, and the implementation is the minimum code that makes the test pass.
 
-This is not a preference — it is a discipline that catches bugs before they exist and produces documentation through executable specifications.
+This is not a preference. It is a discipline. Tests that come first shape the design of the code — they force clear interfaces, they catch over-abstraction early, and they leave behind an executable specification as a byproduct. The test suite for this site lives in `/tests/` mirroring `src/`, and it runs in CI on every push.
+
+TDD is slower than cowboy coding on day one. It is much faster by the third week.
 
 ## AI-Augmented Workflow
 
-I use AI tools throughout my development process — not as a crutch, but as a force multiplier. AI-assisted code review, architecture exploration, test generation, and documentation. The result is higher quality output delivered faster.
+I use AI tools extensively — Claude Code, structured prompt libraries, custom rules files — as a force multiplier on work I was already doing. Not a replacement for engineering judgment, and not a feature to sprinkle on a product to look modern.
 
-When I build AI into products, I apply the same engineering rigor: cost control, hallucination prevention, retrieval-augmented generation, and real evaluation — not just API calls.
+The discipline is the same as with any other tool: know when to trust it, know when not to, verify its output, and never let it make architectural decisions on your behalf. AI is very good at filling in the second draft of code. It is very bad at deciding what the code should do.
 
-## Security and Performance
+When AI shows up inside the products I build, it gets the same rigor as the rest of the system: cost control, failure handling, clear evaluation criteria, and honest scoping of what it can and cannot do. A product with AI in it is still a product. The AI does not get a pass on correctness, latency, or cost.
 
-Security is a design principle, not a checklist. Input validation, rate limiting, secure headers, and content security policies are built into the foundation, not bolted on at the end.
+## Security as a Design Principle
 
-Performance is a feature. Every system I build targets Lighthouse 95+ and is optimized for real-world load times, not just synthetic benchmarks.
+Security lives in the foundation or it does not live at all. Input validation, rate limiting, secure headers, content security policies, and tight permissions are design decisions made on day one, not a checklist run the week before launch.
+
+On the Austin platform, that meant a scoped `Content-Security-Policy`, HSTS preload, `Permissions-Policy`, a `frame-ancestors` directive tuned for the Sanity Studio embed, and a SecurityHeaders.com Grade A result verified in the production audit. This site uses the same posture. It is not hard to do — it just has to be decided early, while the architecture is still moving.
+
+## Performance as a Feature
+
+Performance is not an audit you run before launch. It is a property of the architecture.
+
+The Austin platform hits Cumulative Layout Shift of zero on every page, Total Blocking Time between 20 and 150 milliseconds, and accepts a deliberate tradeoff on mobile LCP for image-heavy project pages — because degrading the photography on a visual portfolio to optimize a synthetic metric would harm the brand more than it helps. This site hits 100 on Lighthouse Accessibility across every page and zero CLS across the board.
+
+Good numbers come from decisions about fonts, image strategy, client JavaScript, and layout stability — made in the design system, not patched in during the final week.
 
 ## Collaboration
 
-I work closely with designers and product teams. My job is to translate vision into reliable, maintainable systems — to say "yes, and here is how we make it work long-term" rather than "no, that is too hard."
+The best work happens when engineers and designers treat intent as the source of truth, not Figma files and not code. Both are representations. The design is the intent behind them, and the job of both roles is to defend the outcome rather than the tool.
 
-The best products come from engineers and designers who respect each other's expertise and work together to find the right solution.
+I wrote about that in more detail in [Working With Designers](/writing/working-with-designers) — it is one of the most important lessons from the Austin project. Working well across roles is not a soft skill. It is how products actually get built.
