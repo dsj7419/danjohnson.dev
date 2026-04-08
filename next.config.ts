@@ -53,6 +53,13 @@ const nextConfig: NextConfig = {
   },
 }
 
+// MDX plugin stack (see ADR-0005). Three functional content plugins only:
+//   - remark-gfm: GitHub-flavored markdown
+//   - rehype-pretty-code: Shiki-based dual-theme syntax highlighting
+//   - rehype-slug: heading id generation for TOC
+// remark-frontmatter is parser plumbing, not a content transformation — it
+// tells the MDX parser to strip YAML frontmatter so gray-matter can own it
+// and MDX does not render it as prose.
 const withMDX = createMDX({
   options: {
     remarkPlugins: ['remark-frontmatter', 'remark-gfm'],
