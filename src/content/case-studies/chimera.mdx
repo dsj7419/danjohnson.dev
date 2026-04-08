@@ -1,0 +1,322 @@
+---
+title: 'Project Chimera — Building an Editorial System Where Every Sentence Is Accountable'
+description: 'Architecture and engineering of an editorial platform where research, writing, provenance, and verification are treated as one accountable system.'
+date: '2026-03-14'
+tags:
+  - editorial-systems
+  - agentic-infrastructure
+  - provenance
+  - verification
+  - product-engineering
+  - observability
+featured: true
+draft: false
+role: 'Systems Architect / Engineer'
+organization: 'Internal Venture'
+stack:
+  - TypeScript
+  - Next.js 15 (App Router)
+  - tRPC
+  - Prisma
+  - PostgreSQL (Neon)
+  - BullMQ
+  - Redis (Upstash)
+  - NextAuth v5
+  - Tailwind CSS v4
+  - Vercel
+  - Railway
+  - Sentry
+  - OpenTelemetry
+  - Perplexity
+  - Gemini
+  - OpenAI Deep Research
+  - OpenAI
+  - Anthropic
+metrics:
+  - label: 'Active Pipeline'
+    value: '3 stages'
+  - label: 'AI Providers'
+    value: '5'
+  - label: 'Verification Gates'
+    value: '2'
+  - label: 'HIGH Findings'
+    value: '7 → 0'
+related:
+  - '/work/austin-eischeid'
+  - '/how-i-build'
+---
+
+import { Callout } from '@/components/blocks/callout'
+import { DiagramWrapper } from '@/components/blocks/diagram-wrapper'
+import { Quote } from '@/components/blocks/quote'
+import { RelatedContent } from '@/components/blocks/related-content'
+
+## Overview
+
+Project Chimera is an editorial systems architecture project, not a generic AI content story. The platform's organizing thesis is short and demanding: if a system is going to publish knowledge, every factual sentence should be defensible.
+
+That single standard reshapes everything underneath it. It changes what counts as research, what counts as writing, what counts as verification, and most of all what counts as done. It forces the platform to behave less like a content generator and more like an editorial machine with memory, evidence, gates, and consequences.
+
+This is not a thin wrapper around a language model. Chimera is a multi-stage, multi-tenant system for researching, writing, verifying, and maintaining content with full provenance and operational accountability. The AI is part of the system, not the centerpiece. The centerpiece is the trust layer around it — a stored evidence graph, two-stage verification, governed rollout, and a control plane that represents what is actually live versus what is partial versus what is deliberately deferred.
+
+Chimera is best understood as governed editorial infrastructure: closer to a publishing system that happens to use models than to a generation tool that happens to add citations. That distinction shapes every architectural decision in this case study.
+
+## The Problem
+
+The AI content space has a trust problem. Not a branding problem, not a UX problem — a trust problem.
+
+Most systems in this category are built around generation first. Research is shallow or opaque. Verification is treated as a prompt rather than a governed stage. Citations are decorative. Operational failures disappear into background jobs. Cost controls are described in language the providers do not actually support. And when something goes wrong, there is rarely a clean answer to the most important question: _why should anyone trust what this system produced?_
+
+That was the problem Chimera was built to solve.
+
+The deeper version of the question reaches further. How do you build a system where sources are first-class? How do you preserve a traceable chain from raw evidence to published draft? How do you enforce editorial discipline in an autonomous pipeline? How do you make a multi-agent system reproducible, reviewable, and operable? How do you make failure visible instead of silent? How do you control cost without pretending the providers all behave the same way?
+
+Those questions defined the project more than any feature list.
+
+### Constraints
+
+The constraints that shaped the architecture were not about UI complexity. They were about truthfulness under operational pressure.
+
+- **Provider asymmetry.** Five model providers, none of them behaving the same. Cost semantics, cancellation, retry envelopes, and verification quality differ enough that "one cost policy fits all" is a fiction the system cannot afford.
+- **Cost ceilings.** Real per-stage budgets with hard enforcement points where they could be enforced and explicit waivers where they could not. Pretending universal hard-stop semantics across providers would have been dishonest.
+- **Stage-maturity honesty.** Every stage had to be represented in the language the team used — active, canary-gated, schema-only — not flattened into a marketing pipeline. Code presence is not the same thing as operational truth.
+- **Hallucination tolerance.** Zero tolerance for unsupported factual sentences. The platform's value proposition collapses the moment a claim is published without a citation backed by stored evidence.
+- **Worker and runtime reality.** Background workers fail silently if the discipline around lifecycle, DLQ behavior, retries, and alerting is loose. The platform required real operational hardening, not code that merely looked like it would work.
+
+## Approach
+
+Five non-negotiable principles came out of the problem framing.
+
+**Documentation is the control plane, not a side artifact.** Most projects let docs lag the code. Chimera could not afford that. Roadmaps, truth tables, gate packets, schema-hygiene memos, operational playbooks, and launch checklists are treated as active program infrastructure. When code and docs diverge, we resolve it.
+
+**"Shipped" means evidenced, not implied.** A queue constant is not a stage. A schema is not an implementation. A worker file is not an active runtime path. We were rigorous about that distinction. It is why the live system can be described cleanly as a three-stage active pipeline — research, write, verify — while QA is implemented and worker-registered but still canary-gated, and Architect remains schema-only.
+
+**Provenance is the product contract.** In Chimera, provenance is not an add-on. It is the structural reason the system can defend its output. The chain from `SourceDocument` to `Citation` to claim-bearing content to published draft has to hold across queue boundaries, worker failures, verification stages, and the public surface.
+
+**Operational discipline matters as much as model quality.** Background execution, retries, DLQ behavior, alerting, worker lifecycle, burn-in windows, and rollback verification are treated as first-class engineering work, not secondary cleanup. Systems like this only become real when they are governable.
+
+**The smallest correct change is usually the best change.** As the platform matured, the most important work often looked deceptively small — registering a dormant worker into lifecycle startup, tightening vulnerability posture via targeted overrides, sequencing schema deletion only after burn-in. Not every important contribution is a visible feature.
+
+Chimera was not a solo codebase, and this case study will not pretend otherwise. My work sat at the architecture and execution boundary: the architectural calls, acceptance standards, sequencing, and trust model were mine. Some implementation work was AI-assisted and engineer-executed. What I personally owned was the discipline of evidence — what shipped, what was canary-gated, what was deferred, what was a residual — and the truth-table that enforced it.
+
+## Architecture
+
+The system has a clean shape under the surface complexity.
+
+A user opens the web app, creates an article request around a topic and niche, and starts a tracked run. The application creates the run and content records, persists initial state, and enqueues the first stage job onto a BullMQ queue backed by Upstash Redis. Long-lived worker processes running on Railway pull jobs off the queue and execute each stage in turn — research, then write, then verify — calling out to the AI provider boundary for the model work and persisting every artifact (sources, briefs, drafts, citations, verification output, telemetry) back to a Postgres database on Neon through Prisma. The same database powers the public provenance surface: provenance pages, badges, and a JSON API.
+
+The boundary that matters most is the one between the _runtime path_ and the _control plane_. The runtime path is the live request flow: queues, workers, providers, persistence. The control plane is everything that governs what is allowed onto the runtime path: the truth table, the gate packets, the canary policy, the rollout state, the evidence packets, the docs that say what is implemented versus active versus deferred. Most AI content systems collapse those two layers into one, which is why their operational story breaks down the moment something goes wrong. Chimera keeps them separate on purpose.
+
+<DiagramWrapper caption="Project Chimera's runtime path: a user request enters the web app, fans out through a queue to long-lived workers on Railway, which call the AI provider boundary and persist sources, briefs, citations, and verification output to Neon. The same data graph powers the public provenance surface. The control plane (docs, truth tables, gate packets, rollout state) is not drawn — it sits above the runtime path and governs what is allowed to ship.">
+  <svg
+    viewBox="0 0 920 500"
+    xmlns="http://www.w3.org/2000/svg"
+    className="w-full max-w-3xl text-(--color-text)"
+  >
+    <defs>
+      <marker id="chimera-arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L9,3 z" fill="currentColor" opacity="0.5" />
+      </marker>
+    </defs>
+
+    {/* User — frontend (blue) */}
+    <rect x="20" y="40" width="120" height="60" rx="8" fill="rgb(99 102 241 / 0.1)" stroke="rgb(99 102 241 / 0.6)" strokeWidth="1.5" />
+    <text x="80" y="68" textAnchor="middle" fill="currentColor" fontSize="14" fontWeight="600">User</text>
+    <text x="80" y="86" textAnchor="middle" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">editor</text>
+
+    <line x1="140" y1="70" x2="170" y2="70" stroke="currentColor" strokeWidth="1.5" opacity="0.5" markerEnd="url(#chimera-arrow)" />
+
+    {/* Web App — frontend (blue) */}
+    <rect x="170" y="40" width="190" height="60" rx="8" fill="rgb(99 102 241 / 0.1)" stroke="rgb(99 102 241 / 0.6)" strokeWidth="1.5" />
+    <text x="265" y="68" textAnchor="middle" fill="currentColor" fontSize="14" fontWeight="600">Web App</text>
+    <text x="265" y="86" textAnchor="middle" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">Next.js + tRPC on Vercel</text>
+
+    <line x1="360" y1="70" x2="390" y2="70" stroke="currentColor" strokeWidth="1.5" opacity="0.5" markerEnd="url(#chimera-arrow)" />
+
+    {/* Queue — storage (gray) */}
+    <rect x="390" y="40" width="160" height="60" rx="8" fill="rgb(107 114 128 / 0.1)" stroke="rgb(107 114 128 / 0.6)" strokeWidth="1.5" />
+    <text x="470" y="68" textAnchor="middle" fill="currentColor" fontSize="14" fontWeight="600">Queue</text>
+    <text x="470" y="86" textAnchor="middle" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">BullMQ + Upstash</text>
+
+    <line x1="550" y1="70" x2="580" y2="70" stroke="currentColor" strokeWidth="1.5" opacity="0.5" markerEnd="url(#chimera-arrow)" />
+
+    {/* Worker Runtime — backend (green) */}
+    <rect x="580" y="40" width="190" height="60" rx="8" fill="rgb(16 185 129 / 0.1)" stroke="rgb(16 185 129 / 0.6)" strokeWidth="1.5" />
+    <text x="675" y="68" textAnchor="middle" fill="currentColor" fontSize="14" fontWeight="600">Worker Runtime</text>
+    <text x="675" y="86" textAnchor="middle" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">Railway, long-lived</text>
+
+    <line x1="770" y1="70" x2="800" y2="70" stroke="currentColor" strokeWidth="1.5" opacity="0.5" markerEnd="url(#chimera-arrow)" />
+
+    {/* Provider Boundary — AI/LLM (purple) */}
+    <rect x="800" y="40" width="110" height="60" rx="8" fill="rgb(168 85 247 / 0.1)" stroke="rgb(168 85 247 / 0.6)" strokeWidth="1.5" />
+    <text x="855" y="68" textAnchor="middle" fill="currentColor" fontSize="14" fontWeight="600">Providers</text>
+    <text x="855" y="86" textAnchor="middle" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">5 integrated</text>
+
+    {/* Web App → Core Data (down) */}
+    <line x1="265" y1="100" x2="265" y2="200" stroke="currentColor" strokeWidth="1.5" opacity="0.5" markerEnd="url(#chimera-arrow)" />
+    <text x="278" y="155" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">create run</text>
+
+    {/* Worker → Core Data (down) */}
+    <line x1="675" y1="100" x2="675" y2="200" stroke="currentColor" strokeWidth="1.5" opacity="0.5" markerEnd="url(#chimera-arrow)" />
+    <text x="688" y="155" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">persist</text>
+
+    {/* Core Data + Provenance Store — storage (gray) */}
+    <rect x="170" y="200" width="600" height="100" rx="8" fill="rgb(107 114 128 / 0.1)" stroke="rgb(107 114 128 / 0.6)" strokeWidth="1.5" />
+    <text x="470" y="228" textAnchor="middle" fill="currentColor" fontSize="14" fontWeight="600">Core Data + Provenance Store</text>
+    <text x="470" y="246" textAnchor="middle" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">Neon Postgres + Prisma</text>
+
+    <text x="200" y="278" fill="currentColor" fontSize="12" opacity="0.7" fontFamily="ui-monospace, monospace">AgentRun</text>
+    <text x="285" y="278" fill="currentColor" fontSize="12" opacity="0.7" fontFamily="ui-monospace, monospace">SourceDocument</text>
+    <text x="410" y="278" fill="currentColor" fontSize="12" opacity="0.7" fontFamily="ui-monospace, monospace">ContentBrief</text>
+    <text x="520" y="278" fill="currentColor" fontSize="12" opacity="0.7" fontFamily="ui-monospace, monospace">Citation</text>
+    <text x="600" y="278" fill="currentColor" fontSize="12" opacity="0.7" fontFamily="ui-monospace, monospace">VerifyResult</text>
+
+    {/* Core Data → Public Trust Surface (down) */}
+    <line x1="470" y1="300" x2="470" y2="370" stroke="currentColor" strokeWidth="1.5" opacity="0.5" markerEnd="url(#chimera-arrow)" />
+    <text x="483" y="340" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">read</text>
+
+    {/* Public Trust Surface — frontend (blue) */}
+    <rect x="240" y="370" width="460" height="90" rx="8" fill="rgb(99 102 241 / 0.1)" stroke="rgb(99 102 241 / 0.6)" strokeWidth="1.5" />
+    <text x="470" y="400" textAnchor="middle" fill="currentColor" fontSize="14" fontWeight="600">Public Trust Surface</text>
+    <text x="470" y="420" textAnchor="middle" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">/provenance · /badge · /api/provenance</text>
+    <text x="470" y="440" textAnchor="middle" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">opaque IDs · anti-leak</text>
+
+  </svg>
+</DiagramWrapper>
+
+The user-facing loop reads naturally in five sentences. A user creates an article request in the web app. The application creates a tracked run and enqueues the first stage. Worker processes consume the queue and execute research, then writing, then verification. The artifacts — sources, briefs, drafts, citations, verification output — accumulate in the database under stage-specific schemas. When the draft reaches the provenance surface, the support structure underneath it becomes inspectable through public provenance pages, badges, and the JSON API.
+
+## Engineering Challenges
+
+The most meaningful work on Chimera lived in the boundary decisions, not the feature additions. Four are worth naming.
+
+**Representing stage maturity honestly.** A queue constant is not a stage. A schema is not an implementation. A worker file is not an active runtime path. The hard part was building a vocabulary the team could use under pressure to keep code presence and runtime truth aligned. The truth-table artifact later in this case study is what came out of that discipline.
+
+**Handling multi-provider asymmetry.** Perplexity, Gemini, OpenAI Deep Research, OpenAI, and Anthropic do not behave uniformly. Cost semantics, cancellation, retry envelopes, and verification quality differ enough that one cost policy fitting all providers is a fiction the system cannot afford. Provider asymmetry is a structural property of the space, not a temporary nuisance to abstract over.
+
+**Building provenance as a first-class subsystem.** Provenance only matters if the chain survives every stage. `SourceDocument` to `Citation` to claim-bearing content to published draft has to hold across queue boundaries, worker failures, verification stages, badge rendering, and the public API. The provenance chain in Chimera is not decorative citation output — it is a stored evidence graph that the rest of the system reasons against directly.
+
+**Worker lifecycle and runtime registration discipline.** Background systems fail silently if the discipline around startup, shutdown, DLQ behavior, and registration is loose. The QA near-miss came from exactly this class of issue: the worker existed and looked complete from a code-surface read, but had not yet been wired cleanly into lifecycle startup and shutdown. The fix was not a single line. It was the discipline of refusing to call any stage live until the runtime path, the rollout policy, and the control-plane language all matched.
+
+<Callout variant="insight">
+  Code presence is not the same thing as operational truth.
+</Callout>
+
+## Decisions & Tradeoffs
+
+### 1. QA as canary-gated, not "fully live"
+
+We considered presenting QA as a live production stage because the worker, processor, and modules existed. Surface-read, it would have looked complete. Instead, we positioned QA as implemented, tested, worker-registered, and canary-gated — but not active by default. The pipeline story becomes more nuanced and slightly less flashy as a result. We accepted that tradeoff because the platform's entire value proposition is accountable publishing. Overclaiming the maturity of an internal stage would violate the same trust standard the product is built to enforce.
+
+### 2. Opaque IDs and anti-leak provenance
+
+We considered a simpler public provenance implementation where article and provenance presence could be inferred from direct identifiers or naive badge behavior. We chose opaque ID-based provenance exposure with anti-leak protections, controlled badge rendering, and a public surface that shows evidence without leaking internal existence or state. The tradeoff is implementation complexity: provenance becomes a real architectural subsystem instead of a cheap add-on. The reason is straightforward — once trust becomes part of the product, the provenance surface itself becomes part of the threat model. You cannot talk about trust and then casually leak internal state through your badge implementation. The public provenance surface was designed to reveal support, not internal state.
+
+### 3. Two-gate verification, not a single all-in-one prompt
+
+We considered a single all-in-one verification prompt that would attempt to handle structural and semantic checking in one model call. We chose two separate gates: a pure-compute coverage and integrity pass, then a per-citation LLM entailment pass. The tradeoff is more orchestration and more moving parts. The reason is that a single soft fact-check collapses structural integrity and semantic support into one fuzzy result. Splitting them catches the cheap deterministic failures first and only spends LLM verification cost on structurally valid drafts. Both trust and cost control improve as a result.
+
+### 4. Targeted dependency overrides, not a broad migration sweep
+
+We considered a broad vulnerability-upgrade sweep across the framework and dependency tree. We chose targeted transitive override remediation that eliminated all HIGH findings, reduced total exposure from 21 to 6, and documented the remaining residuals — including four Next.js production-path moderate findings — honestly. The tradeoff is that some framework residuals stay on the books rather than being silently fixed. The reason is that the correct answer was risk reduction, not migration theater. A broad upgrade sweep would have opened a multi-week scope on top of stabilization work the system actually needed. The smallest correct change was the right call.
+
+## Verification and Cost Control
+
+Verification in Chimera is a real two-gate process, not a single soft fact-check.
+
+**Gate 1 — coverage and integrity.** A pure-compute pass that parses the draft into sentences, identifies the factual ones, measures citation coverage, and validates that every citation resolves to a real `SourceDocument` with usable claim and source text. If coverage is too low, citations are invalid, or factual sentences are uncovered, the system fails before any LLM verification cost is incurred.
+
+**Gate 2 — per-citation entailment.** An LLM pass that runs only after Gate 1 passes. It evaluates whether each citation's source evidence actually supports the claim-bearing content it is attached to. This is where the platform moves from structural correctness to semantic support.
+
+The split matters. Gate 1 asks, _is the article structurally supported?_ Gate 2 asks, _does the cited evidence actually support what the sentence is saying?_ A single all-in-one fact-check collapses those two questions into one fuzzy result and does neither well. Two gates also let the cheap deterministic failures bail out before the expensive semantic ones run.
+
+Cost control follows the same pattern. The launch standard is two-thirds hard gates plus an explicit waiver for the third — because provider behavior is asymmetric, and pretending that every provider supports the same cancellation and budget semantics would have been dishonest. The enforcement points sit at three layers: L1 entitlement checks before work is accepted onto a queue, L2 pre-flight cost estimates that are strong for research and write, and L3 mid-run controls used where they make sense rather than universally projected. Stage by stage that means hard pre-provider checks in research, hard pre-model checks in write, module-level budget skip and graceful degradation in QA, and a deterministic loop break in verify when the budget threshold is reached.
+
+The discipline behind the active-vs-canary-vs-schema-only language earlier in this case study is not informal. It is a typed truth-table the platform reasons against directly. A redacted shape:
+
+```typescript
+type PipelineStageStatus = {
+  stage: 'RESEARCH' | 'WRITE' | 'QA' | 'VERIFY' | 'ARCHITECT'
+  codeImplemented: boolean
+  workerRegistered: boolean
+  activeInProduction: boolean
+  rolloutMode: 'active' | 'canary-gated' | 'schema-only'
+  notes?: string
+}
+
+const pipelineTruthTable: PipelineStageStatus[] = [
+  {
+    stage: 'RESEARCH',
+    codeImplemented: true,
+    workerRegistered: true,
+    activeInProduction: true,
+    rolloutMode: 'active',
+  },
+  {
+    stage: 'WRITE',
+    codeImplemented: true,
+    workerRegistered: true,
+    activeInProduction: true,
+    rolloutMode: 'active',
+  },
+  {
+    stage: 'QA',
+    codeImplemented: true,
+    workerRegistered: true,
+    activeInProduction: false,
+    rolloutMode: 'canary-gated',
+    notes: 'Disabled by default until phased rollout criteria are met',
+  },
+  {
+    stage: 'VERIFY',
+    codeImplemented: true,
+    workerRegistered: true,
+    activeInProduction: true,
+    rolloutMode: 'active',
+  },
+  {
+    stage: 'ARCHITECT',
+    codeImplemented: false,
+    workerRegistered: false,
+    activeInProduction: false,
+    rolloutMode: 'schema-only',
+  },
+]
+```
+
+This is not a verbatim repo excerpt. It is a publication-safe redaction of the discipline the system actually uses. The point is that "active" and "canary-gated" and "schema-only" are not marketing words. They are typed values that determine what the runtime actually does, and what the case study is honest about.
+
+## Outcome
+
+What exists today is not a demo, a toy agent workflow, or a thin AI wrapper presented as a platform. It is an editorial operating system with a live multi-stage pipeline, an explicit provenance architecture, governed verification, real worker and queue infrastructure, canary-based rollout discipline, launch-hardening rigor, documented residual risk, and a control plane that reflects reality rather than aspiration.
+
+The active production pipeline today is research, write, verify. QA is implemented, tested, worker-registered, and canary-gated for phased rollout — not active by default. Architect is schema-defined and not yet implemented as a live runtime stage. That language is precise on purpose. It is what the truth table says, and it is what this case study says, and they match.
+
+Five providers are integrated across the system: Perplexity, Gemini, and OpenAI Deep Research in research; OpenAI and Anthropic across writing and verification, with Sonnet-based entailment checking in Gate 2. Two verification gates are live. Dependency posture has been reduced from 21 findings to six, with all seven HIGH findings eliminated and four Next.js production-path moderates documented as residuals deferred to a tracked framework upgrade rather than pretended out of existence.
+
+Just as important, the project has something many technically ambitious systems never achieve: a truthful operational story. When someone asks what is live, what is partial, what is deferred, what is risky, and what is next, there is a clean answer. That is not a side benefit. It is part of the product.
+
+## Reflection
+
+Most software teams underestimate how much value is created by precision. Precision to define stages honestly. Precision to document what is true. Precision to put hard gates where they belong. Precision to separate rollout readiness from implementation status. Precision to make trust an engineering output instead of a brand promise.
+
+A companion article on this site — _Using AI in Real Products, Not Just Demos_ — will continue this thread by looking at the engineering decisions that AI integration imposes on the rest of a system, not just the prompts.
+
+As AI-generated content becomes easier and cheaper to produce, the scarce thing will not be generation. It will be credibility.
+
+<Quote>Credibility does not come from style. It comes from systems.</Quote>
+
+<RelatedContent
+  items={[
+    {
+      path: '/work/austin-eischeid',
+      title: 'Austin Eischeid — Authority Platform & Editorial System',
+      type: 'case-study',
+    },
+    {
+      path: '/how-i-build',
+      title: 'How I Build',
+      type: 'article',
+    },
+  ]}
+/>
