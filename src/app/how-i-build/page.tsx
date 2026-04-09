@@ -23,7 +23,7 @@ export default async function HowIBuildPage() {
       <Container width="reading">
         <Stack gap={8}>
           <Heading level={1}>How I Build</Heading>
-          <Stack gap={6}>
+          <Stack gap={6} className="[&>:first-child]:mt-0">
             <Content />
           </Stack>
         </Stack>

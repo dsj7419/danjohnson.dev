@@ -30,7 +30,7 @@ export default function WorkPage() {
           </Stack>
 
           {caseStudies.length > 0 ? (
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {caseStudies.map((entry) => (
                 <ProjectCard
                   key={entry.slug}

@@ -25,7 +25,7 @@ export default async function WorkWithMePage() {
       <Container width="reading">
         <Stack gap={8}>
           <Heading level={1}>Work With Me</Heading>
-          <Stack gap={6}>
+          <Stack gap={6} className="[&>:first-child]:mt-0">
             <Content />
           </Stack>
           <ContactCTA email={siteConfig.email} />

@@ -26,7 +26,7 @@ export default function HomePage() {
       />
 
       {/* Hero */}
-      <Section>
+      <Section className="!py-12 md:!py-16">
         <Container>
           <Stack gap={6}>
             <Eyebrow>Product Engineer &amp; Systems Architect</Eyebrow>
@@ -57,7 +57,7 @@ export default function HomePage() {
                   View all &rarr;
                 </Link>
               </div>
-              <div className="grid gap-6 md:grid-cols-2">
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {featuredWork.map((entry) => (
                   <ProjectCard
                     key={entry.slug}
@@ -116,7 +116,7 @@ export default function HomePage() {
       {/* Selected Writing */}
       {featuredWriting.length > 0 && (
         <Section>
-          <Container width="reading">
+          <Container>
             <Stack gap={8}>
               <div className="flex items-end justify-between">
                 <Heading level={2}>Writing</Heading>

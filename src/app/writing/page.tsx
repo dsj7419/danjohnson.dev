@@ -19,7 +19,7 @@ export default function WritingPage() {
 
   return (
     <Section>
-      <Container width="reading">
+      <Container>
         <Stack gap={10}>
           <Stack gap={4}>
             <Heading level={1}>Writing</Heading>

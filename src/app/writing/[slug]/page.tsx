@@ -71,7 +71,7 @@ export default async function ArticlePage({ params }: PageProps) {
         }}
       />
       <Section>
-        <Container>
+        <Container width="reading">
           <Stack gap={4}>
             <Eyebrow>{entry.frontmatter.category.replace(/-/g, ' ')}</Eyebrow>
             <Heading level={1}>{entry.frontmatter.title}</Heading>
