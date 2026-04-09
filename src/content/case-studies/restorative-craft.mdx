@@ -1,0 +1,288 @@
+---
+title: 'Restorative Craft — Building a Digital Practice with Heart and Discipline'
+description: 'A digital practice platform for a one-person business — content, booking, payments, loyalty, and admin designed to run end-to-end without a developer in the room.'
+date: '2026-04-09'
+tags:
+  - product-engineering
+  - whole-business-platform
+  - integrations
+  - loyalty-systems
+  - performance
+  - accessibility
+featured: true
+draft: false
+role: 'Senior PM / Systems Architect / Developer'
+client: 'Restorative Craft (Adrian Mendoza)'
+stack:
+  - TypeScript
+  - Next.js 15 (App Router)
+  - Sanity CMS v5
+  - PostgreSQL (Neon)
+  - Drizzle ORM
+  - Acuity Scheduling API
+  - Mailgun
+  - Stripe (via Acuity)
+  - Tailwind CSS
+  - Vitest
+  - Vercel
+  - Porkbun DNS
+metrics:
+  - label: 'Accessibility'
+    value: '100'
+  - label: 'SEO'
+    value: '100'
+  - label: 'CLS'
+    value: '0'
+  - label: 'External Systems'
+    value: '5'
+related:
+  - '/work/austin-eischeid'
+  - '/work/chimera'
+  - '/how-i-build'
+---
+
+import { Callout } from '@/components/blocks/callout'
+import { DiagramWrapper } from '@/components/blocks/diagram-wrapper'
+import { Quote } from '@/components/blocks/quote'
+import { RelatedContent } from '@/components/blocks/related-content'
+
+## Overview
+
+Restorative Craft did not stay a brochure site for long. It became a digital practice platform.
+
+Adrian Mendoza is a classically trained pastry chef who became a massage therapist. The two halves of his story are not unrelated, and the practice that grew out of them — [Restorative Craft](https://restorativecraft.com) — is built around that relationship: precision and warmth, technique and intention, learned in the kitchen and carried into bodywork. The site that came before it didn't reflect any of that. Pages were generic, bookings happened somewhere else, and the loyalty side of the business existed only in Adrian's head.
+
+What we built is a digital practice platform — content, booking, payments, email, loyalty, a client portal, and an admin dashboard — designed so Adrian can run his entire business end-to-end without a developer in the room. It is fast, accessible, and structured. Five external services act as one coherent system underneath. The site is the visible part of a system that is mostly not visible at all.
+
+This case study documents how we got there and what mattered along the way.
+
+## The Problem
+
+Most massage-therapy websites suffer from the same set of failures: cookie-cutter templates, overused spa imagery, opaque booking flows that hand the client off to a third-party calendar without warning, and no real connection between the marketing surface and the business underneath. Adrian's existing presence was no exception. The pages felt generic. Booking required leaving the site. There was no story connecting his culinary background to his bodywork practice. There was no integrated way to reward returning clients. There was no admin surface he could trust.
+
+The deeper problem was not aesthetics. The site failed at the more fundamental task: communicating the craftsmanship and care that defined the practice. A potential client landing on the old site had no way to tell whether Adrian was a serious practitioner or just another listing in a category that is mostly listings.
+
+The mandate that emerged from that was clear. Build a system that reflected Adrian's professionalism, integrated his services end-to-end, and let him evolve the business without technical friction. That meant designing not a website but a practice platform — content, booking, payments, email, a real loyalty engine backed by a database, and management interfaces for both clients and admin.
+
+## Constraints
+
+The constraints that shaped this project were less about feature scope and more about what kind of platform it needed to be at every layer.
+
+**Narrative coherence as a product constraint.** The chef-and-bodywork identity is the organizing logic of the practice, and the platform had to be built around that logic — not around a content-management default. Service descriptions, content categories, and the tone of every page have to follow from it. A system that treated the dual identity as a branding angle would have flattened the very thing it was supposed to honor, and it would have done so at the architectural level: in the content shapes, in the navigation, in the editorial defaults.
+
+**One-person operability.** Adrian had to be able to run the platform after launch — content, services, prices, email templates, loyalty accounts, environment variables — without a developer at his side. Every architectural decision had to be evaluated against that.
+
+**Integration integrity.** Five external services had to act as one coherent system. Each one is a contract with explicit failure modes: webhooks authenticated against shared secrets, schema migrations reversible, secrets out of the client bundle. No margin for "we'll handle that later."
+
+**Accessibility and performance as floors.** WCAG 2.1 AA, CLS=0, and Lighthouse 100 on accessibility and SEO were treated as non-negotiable from day one.
+
+**Operational truth over feature breadth.** Every roadmap stage had to leave the system in a working, defensible state. No half-implemented features in production.
+
+## Approach
+
+Restorative Craft was treated as a multi-phase program, not a one-off website. Each phase introduced new capabilities while preserving the integrity of what came before. Five principles guided the work.
+
+**Narrative first.** The site tells Adrian's story. Service descriptions read like a chef's tasting menu — modality, intention, experience. Blog posts and testimonials are woven into the same narrative of craft and care. None of this is decoration; it is the most important thing the site has to do.
+
+**Systems over pages.** We built content types and relationships, not hard-coded pages. Sanity acts as the structured content layer; pages pull data via GROQ queries at build time and render with Next.js. New content takes the existing shape automatically.
+
+**Performance and accessibility as design discipline.** Next.js 15 with the App Router. Tailwind. Server components by default. Self-hosted variable fonts. Images optimized through next/image with responsive sizes and modern formats. Accessibility 100, SEO 100, CLS 0 — verified in production audits, not aspirational targets.
+
+**Integration integrity.** External services treated as first-class citizens with explicit contracts. Webhooks validated against shared secrets. Discount codes generated with cryptographically secure randomness. Drizzle migrations managing schema changes. Magic-link tokens signed, short-lived, and never stored in the URL.
+
+**Handoff readiness as a deliverable.** Every phase shipped with a user guide, an admin SOP, and an environment-variable template. The Neon database is set up so it can be transferred to Adrian's own account at handoff without disrupting live data. None of this work shows up in a feature list, but it is what separates a system Adrian inherits from a system he depends on.
+
+I owned the architecture, sequencing, integration strategy, acceptance standards, and delivery discipline for the platform. The system design, roadmap shape, and operational decisions were mine. Implementation was mine, with AI used selectively as an assistive tool rather than a substitute for product or engineering judgment.
+
+## Architecture
+
+The platform is a static-first Next.js application backed by Sanity for content and Neon Postgres for the loyalty store. Pages are statically generated at build time and served from Vercel's edge. React Server Components handle most of the rendering, which keeps the client bundle small. Only the booking flow, the contact form, the client portal, and the admin dashboard run client-side interactivity.
+
+There are two distinct paths through the system: a build-time content path and a runtime business loop. The content path is straightforward — Next.js fetches structured content from Sanity at build time, renders it, and ships static HTML to Vercel's CDN. Every public page is on this path.
+
+The runtime business loop is where the platform earns its name. A visitor lands on the site, browses services, and books an appointment. The booking interface talks to Acuity to fetch availability and create the appointment; payment runs through Stripe via Acuity's integrated checkout; confirmation and reminder emails go through Mailgun. Each of those external services then sends webhook events back to the platform — Acuity confirms the appointment, Mailgun confirms delivery — and Next.js API routes catch those webhooks, validate them against shared secrets, and persist the relevant facts to Neon Postgres through Drizzle. The same Neon database powers both the client portal (passwordless, magic-link-authenticated) and the admin dashboard (bcrypt-protected, for Adrian only).
+
+<DiagramWrapper caption="Restorative Craft's runtime business loop: visitors browse statically generated pages built from Sanity content, book through Acuity, pay via Stripe (through Acuity), and receive email via Mailgun. Webhook events flow back into Next.js API routes, validated against shared secrets and persisted to Neon Postgres through Drizzle. The same loyalty store powers Adrian's admin dashboard and the passwordless client portal.">
+  <svg
+    viewBox="0 0 920 600"
+    xmlns="http://www.w3.org/2000/svg"
+    className="w-full max-w-3xl text-[var(--color-text)]"
+  >
+    <defs>
+      <marker id="rc-arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L9,3 z" fill="currentColor" opacity="0.5" />
+      </marker>
+    </defs>
+
+    {/* Visitor — frontend (blue) */}
+    <rect x="20" y="20" width="120" height="60" rx="8" fill="rgb(99 102 241 / 0.1)" stroke="rgb(99 102 241 / 0.6)" strokeWidth="1.5" />
+    <text x="80" y="48" textAnchor="middle" fill="currentColor" fontSize="14" fontWeight="600">Visitor</text>
+    <text x="80" y="66" textAnchor="middle" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">client</text>
+
+    <line x1="140" y1="50" x2="305" y2="50" stroke="currentColor" strokeWidth="1.5" opacity="0.5" markerEnd="url(#rc-arrow)" />
+
+    {/* Web App — frontend (blue) */}
+    <rect x="305" y="20" width="190" height="60" rx="8" fill="rgb(99 102 241 / 0.1)" stroke="rgb(99 102 241 / 0.6)" strokeWidth="1.5" />
+    <text x="400" y="48" textAnchor="middle" fill="currentColor" fontSize="14" fontWeight="600">Web App</text>
+    <text x="400" y="66" textAnchor="middle" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">Next.js + Vercel</text>
+
+    {/* dashed build-time arrow Web App -> Sanity */}
+    <line x1="495" y1="50" x2="650" y2="50" stroke="currentColor" strokeWidth="1.5" opacity="0.5" markerEnd="url(#rc-arrow)" strokeDasharray="4 4" />
+    <text x="572" y="42" textAnchor="middle" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">build-time</text>
+
+    {/* Sanity — external (orange) */}
+    <rect x="650" y="20" width="180" height="60" rx="8" fill="rgb(249 115 22 / 0.1)" stroke="rgb(249 115 22 / 0.6)" strokeWidth="1.5" />
+    <text x="740" y="48" textAnchor="middle" fill="currentColor" fontSize="14" fontWeight="600">Sanity CMS</text>
+    <text x="740" y="66" textAnchor="middle" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">structured content</text>
+
+    {/* Web App down to runtime services row */}
+    <line x1="400" y1="80" x2="400" y2="135" stroke="currentColor" strokeWidth="1.5" opacity="0.5" markerEnd="url(#rc-arrow)" />
+    <text x="413" y="115" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">runtime</text>
+
+    {/* Acuity — external (orange) */}
+    <rect x="100" y="135" width="180" height="60" rx="8" fill="rgb(249 115 22 / 0.1)" stroke="rgb(249 115 22 / 0.6)" strokeWidth="1.5" />
+    <text x="190" y="163" textAnchor="middle" fill="currentColor" fontSize="14" fontWeight="600">Acuity</text>
+    <text x="190" y="181" textAnchor="middle" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">booking</text>
+
+    {/* Stripe — external (orange) */}
+    <rect x="310" y="135" width="180" height="60" rx="8" fill="rgb(249 115 22 / 0.1)" stroke="rgb(249 115 22 / 0.6)" strokeWidth="1.5" />
+    <text x="400" y="163" textAnchor="middle" fill="currentColor" fontSize="14" fontWeight="600">Stripe</text>
+    <text x="400" y="181" textAnchor="middle" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">via Acuity, payments</text>
+
+    {/* Mailgun — external (orange) */}
+    <rect x="520" y="135" width="180" height="60" rx="8" fill="rgb(249 115 22 / 0.1)" stroke="rgb(249 115 22 / 0.6)" strokeWidth="1.5" />
+    <text x="610" y="163" textAnchor="middle" fill="currentColor" fontSize="14" fontWeight="600">Mailgun</text>
+    <text x="610" y="181" textAnchor="middle" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">email</text>
+
+    {/* webhook arrows from Acuity and Mailgun back down to API Routes */}
+    <line x1="190" y1="195" x2="320" y2="265" stroke="currentColor" strokeWidth="1.5" opacity="0.5" markerEnd="url(#rc-arrow)" />
+    <line x1="610" y1="195" x2="480" y2="265" stroke="currentColor" strokeWidth="1.5" opacity="0.5" markerEnd="url(#rc-arrow)" />
+    <text x="298" y="240" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">webhooks</text>
+
+    {/* API Routes — backend (green) */}
+    <rect x="300" y="265" width="200" height="60" rx="8" fill="rgb(16 185 129 / 0.1)" stroke="rgb(16 185 129 / 0.6)" strokeWidth="1.5" />
+    <text x="400" y="293" textAnchor="middle" fill="currentColor" fontSize="14" fontWeight="600">API Routes</text>
+    <text x="400" y="311" textAnchor="middle" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">webhook handlers</text>
+
+    {/* API Routes down to Neon */}
+    <line x1="400" y1="325" x2="400" y2="385" stroke="currentColor" strokeWidth="1.5" opacity="0.5" markerEnd="url(#rc-arrow)" />
+    <text x="413" y="362" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">persist</text>
+
+    {/* Neon Postgres — storage (gray) */}
+    <rect x="100" y="385" width="720" height="100" rx="8" fill="rgb(107 114 128 / 0.1)" stroke="rgb(107 114 128 / 0.6)" strokeWidth="1.5" />
+    <text x="460" y="413" textAnchor="middle" fill="currentColor" fontSize="14" fontWeight="600">Neon Postgres + Drizzle</text>
+    <text x="460" y="431" textAnchor="middle" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">loyalty store</text>
+
+    <text x="135" y="463" fill="currentColor" fontSize="12" opacity="0.7" fontFamily="ui-monospace, monospace">clients</text>
+    <text x="220" y="463" fill="currentColor" fontSize="12" opacity="0.7" fontFamily="ui-monospace, monospace">accounts</text>
+    <text x="320" y="463" fill="currentColor" fontSize="12" opacity="0.7" fontFamily="ui-monospace, monospace">transactions</text>
+    <text x="450" y="463" fill="currentColor" fontSize="12" opacity="0.7" fontFamily="ui-monospace, monospace">rewards</text>
+    <text x="540" y="463" fill="currentColor" fontSize="12" opacity="0.7" fontFamily="ui-monospace, monospace">redemptions</text>
+    <text x="660" y="463" fill="currentColor" fontSize="12" opacity="0.7" fontFamily="ui-monospace, monospace">synced_appointments</text>
+
+    {/* Neon down to portals */}
+    <line x1="240" y1="485" x2="240" y2="525" stroke="currentColor" strokeWidth="1.5" opacity="0.5" markerEnd="url(#rc-arrow)" />
+    <line x1="600" y1="485" x2="600" y2="525" stroke="currentColor" strokeWidth="1.5" opacity="0.5" markerEnd="url(#rc-arrow)" />
+
+    {/* Client Portal — frontend (blue) */}
+    <rect x="120" y="525" width="240" height="60" rx="8" fill="rgb(99 102 241 / 0.1)" stroke="rgb(99 102 241 / 0.6)" strokeWidth="1.5" />
+    <text x="240" y="553" textAnchor="middle" fill="currentColor" fontSize="14" fontWeight="600">Client Portal</text>
+    <text x="240" y="571" textAnchor="middle" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">passwordless · magic link</text>
+
+    {/* Admin Dashboard — frontend (blue) */}
+    <rect x="480" y="525" width="240" height="60" rx="8" fill="rgb(99 102 241 / 0.1)" stroke="rgb(99 102 241 / 0.6)" strokeWidth="1.5" />
+    <text x="600" y="553" textAnchor="middle" fill="currentColor" fontSize="14" fontWeight="600">Admin Dashboard</text>
+    <text x="600" y="571" textAnchor="middle" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">bcrypt-protected</text>
+
+  </svg>
+</DiagramWrapper>
+
+The runtime business loop matters because it is where the platform stops being a website and starts being a practice. Most of the work that makes Restorative Craft credible to a client happens between the moment they book and the moment they come back — and almost none of it touches a page render.
+
+The architecture also keeps a strict separation between the client portal and the admin dashboard. They are different route groups, with different authentication models and no shared components. That decision is in the Decisions & Tradeoffs section below.
+
+## Engineering Challenges
+
+Several parts of this build required careful thought.
+
+**The E0 technical-debt foundation.** The starting codebase had Sanity clients duplicated across `src/lib/sanity` and `src/sanity/lib`, scattered GROQ queries with no single source of truth, and inline styles instead of Tailwind utilities. The temptation was to keep shipping features and clean up later. The discipline was to consolidate first — single client, single query layer, replaced inline styles, removed dead code — before anything else got built. Without that refactor, the testing infrastructure, the loyalty engine, and the database integration would have all landed on a foundation that was structurally fighting them.
+
+**Five external services as one coherent system.** Sanity, Acuity, Mailgun, Neon, and Stripe (via Acuity) had to act like one platform from the user's perspective. The interesting work wasn't wiring up each integration. It was making sure no single integration could fail in a way that silently corrupted the others. That meant explicit contracts at every boundary: shared-secret webhook validation, idempotency keys, signed magic-link tokens, environment-variable hygiene, schema migrations managed via Drizzle.
+
+**The loyalty-engine deduplication call.** When the loyalty engine started awarding points on completed appointments, the obvious risk was double-counting. Acuity will fire the same appointment-completed webhook twice if it doesn't get a clean acknowledgment, and a naive implementation would silently award points twice — quietly inflating tier progression for any client whose webhook happened to retry. The fix was to make the synced-appointments table the deduplication boundary itself: store the canonical Acuity appointment ID alongside a content hash of the payload, and reject any incoming webhook whose ID-and-hash combination already existed. The points-awarding function then keys off the synced-appointments row, not the raw webhook event. The same pattern protects against any future webhook provider that doesn't guarantee exactly-once delivery — which is most of them.
+
+<Callout variant="insight">
+  Webhook retries become a no-op instead of a silent corruption vector — by
+  design.
+</Callout>
+
+**Handoff readiness as a first-class deliverable.** Building a system Adrian could not run after launch would have been worse than not building one at all. Each phase shipped with a user guide, an admin SOP, and an environment-variable template. The Neon database is set up so it can be transferred to Adrian's own account at handoff without disturbing live data. None of that work shows up in a feature list, but it is what separates a system Adrian inherits from a system he depends on.
+
+## Decisions & Tradeoffs
+
+### 1. Neon Postgres over Supabase
+
+We considered Supabase's free tier — well-known, pleasant developer experience, plenty of community examples. We chose Neon Postgres on the Pro tier. The tradeoff was a few dollars a month where Supabase free would have been zero, and a less integrated developer surface — just Postgres with branching, no built-in auth or storage. The reason was a single line in the Supabase docs: the free tier pauses inactive projects after seven days. For a loyalty engine attached to a one-person practice with intermittent client visits, a paused database means a returning client's first booking after a quiet stretch silently fails to award points. That is exactly the class of failure the rest of the architecture is designed to prevent. Neon's always-on Pro tier with point-in-time recovery removes the failure mode entirely. The smallest correct change.
+
+### 2. Magic-link authentication for the client portal
+
+We considered email-and-password, social OAuth, or no authenticated portal at all. We chose passwordless magic-link authentication: the client enters their email, receives a signed short-lived token, opens the link, and the server exchanges it for an httpOnly session cookie. The tradeoff is a round-trip through email and some first-time confusion. We accepted it because Adrian's clients visit the portal a few times a year to check points and redeem rewards. Asking them to remember a password for that is friction with no upside, and inviting password reuse on a low-stakes account is a security liability for them. Magic links keep the portal genuinely useful without making it a credential-management surface.
+
+### 3. Client portal and admin dashboard as separate route groups
+
+We considered sharing components and authentication logic between the two surfaces to reduce duplication. We chose two separate Next.js route groups with distinct authentication models and no shared components. The tradeoff is some duplication of UI primitives and a small amount of extra implementation work. The reason is that sharing components between authenticated surfaces with different threat models is one of the most reliable ways to introduce a privilege-escalation bug. The client portal is passwordless and serves the public; the admin dashboard is bcrypt-protected and serves Adrian only. Treating them as one codebase with a permission system would have made it possible — under future maintenance pressure — for an admin-only component to leak into the client surface. Separating them at the route-group level makes that mistake structurally impossible. Duplication is the price of the structural guarantee.
+
+### 4. Phased loyalty rollout, not feature-complete launch
+
+We considered building the full loyalty engine — points, tiers, rewards, referrals, birthday bonuses — before launching any of it. We chose a phased rollout. The first launch shipped points accumulation, three tiers (Bronze, Silver, Gold), and percentage-discount redemption. Referral bonuses, birthday rewards, and free add-ons were intentionally deferred. The tradeoff is that the first version looks less impressive in a feature comparison, and Adrian had to wait. The reason is that a loyalty engine that ships partially broken is worse than one that ships less. Each deferred feature has its own edge cases — referrals need fraud protection, birthdays need scheduling, add-ons interact with Acuity's discount system in ways that need separate testing. Shipping the simplest correct version first meant the engine could be in real use, accumulating real feedback, while the rest of the roadmap stayed honest about what was implemented and what was not.
+
+## Verification and Operational Discipline
+
+Several disciplines are non-negotiable underneath the surface of the platform. They are the difference between a system that runs and a system that holds together.
+
+The codebase runs typecheck, lint, the full test suite, and a production build on every push. Test-driven development is mandatory for new business logic — the loyalty math, the webhook handlers, the magic-link token exchange, every function that touches money or identity has a unit test that documents its expected behavior. Vitest runs in CI; failures block merge.
+
+Environment-variable hygiene is treated as production-critical. Secrets live in Vercel and never reach the client bundle. Every webhook handler validates against a shared secret before it processes a single byte of payload. Schema migrations are managed through Drizzle and reviewed before they ship. Every integration boundary is a contract that can be inspected, tested, and revised independently.
+
+The hardest decision of the project came in the second sprint. The codebase had inherited zero test coverage, and every feature on the roadmap — webhooks, loyalty math, magic-link auth — was the kind of code that fails silently when it fails. Silent failures ship broken and stay broken for weeks. The temptation was to keep building features and add tests later. Instead, I blocked all feature work in E0.5 until Vitest, React Testing Library, jsdom, and the CI pipeline were in place and running on every push. That decision cost a sprint of visible progress. It was the right call. Every webhook, every loyalty function, every magic-link handler that shipped after E0.5 landed with verifiable correctness from day one. The painful version of that lesson is that "we'll add tests later" is the same sentence as "we'll find the bugs in production."
+
+## Outcome
+
+What exists today is more than a website. It is the system that runs the parts of Adrian's business he used to run by hand or not at all.
+
+**What is live today.** Content, structured navigation, blog and testimonials, FAQ, contact form. The full booking flow with real availability and Stripe payments through Acuity. Email confirmations and reminders through Mailgun. Webhook sync from Acuity and Mailgun into Neon Postgres. The loyalty engine — points accumulation, three tiers, discount redemption — backed by the deduplication-safe synced-appointments table. The passwordless client portal. The bcrypt-protected admin dashboard. Test coverage across the business logic, CI on every push, environment-variable hygiene, secured webhooks. Lighthouse 100 on accessibility and SEO across every page. Cumulative Layout Shift of zero.
+
+**What is in handoff.** The Neon database transfer to Adrian's own account, queued to happen after his first quiet week so the loyalty engine doesn't lose any in-flight state.
+
+**What is deferred.** The advanced loyalty features — referral bonuses, birthday rewards, free add-ons, multi-redemption flows — are intentionally not shipped yet. Each one has its own edge cases and its own threat model, and shipping them on top of a stable foundation is cheaper than shipping a partially broken loyalty engine and patching it under load.
+
+The system has a truthful operational story. That is part of the product.
+
+## Reflection
+
+Restorative Craft taught a lesson the rest of my work has been pushing toward for years: a system worth trusting comes from precision and discipline applied at every layer, including the layers nobody sees. The technical debt cleanup in E0. The testing infrastructure in E0.5. The decision to defer half the loyalty features. The decision to keep the client portal and the admin dashboard structurally separate. Each one of those is a small choice that the user will never notice, and every one of them is the reason the platform holds together.
+
+A pastry chef builds a tasting menu the same way: every component prepared and tested before service, so the dish that arrives at the table looks effortless because the work that produced it was anything but. Adrian became a bodyworker after years in that discipline, and the platform that carries his practice forward had to match his level of care.
+
+<Quote>Precision and discipline produce trust.</Quote>
+
+<RelatedContent
+  items={[
+    {
+      path: '/work/austin-eischeid',
+      title: 'Austin Eischeid — Authority Platform & Editorial System',
+      type: 'case-study',
+    },
+    {
+      path: '/work/chimera',
+      title:
+        'Project Chimera — Building an Editorial System Where Every Sentence Is Accountable',
+      type: 'case-study',
+    },
+    {
+      path: '/how-i-build',
+      title: 'How I Build',
+      type: 'article',
+    },
+  ]}
+/>
