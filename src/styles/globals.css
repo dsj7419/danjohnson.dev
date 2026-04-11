@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 
 @custom-variant dark (&:where(.dark, .dark *));
+@custom-variant coarse (@media (pointer: coarse));
 
 @theme {
   --spacing: 0.25rem;

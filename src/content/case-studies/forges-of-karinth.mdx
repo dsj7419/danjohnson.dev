@@ -224,7 +224,7 @@ Alternatives: xoshiro128\*\*, PCG32. Mulberry32 is marginally weaker than either
 
 Eight lines. The entire trust boundary is visible at a glance:
 
-```typescript
+```typescript title="prng.ts"
 export const createSeededRng = (seed: number): Rng => {
   let s = seed | 0
   return (): number => {
@@ -244,7 +244,7 @@ Alternatives: plain JS number with epsilon handling, big.js Decimal everywhere, 
 
 The specific failure: `Math.pow(1.4, 3)` in IEEE 754 doubles is `13719.999999999996`, not `13720`. That one-damage difference at a tier threshold changes whether an encounter is beatable at level 10 or level 11. Integer scaling eliminates the entire class:
 
-```typescript
+```typescript title="integer-math.ts"
 export const COMBAT_SCALE = 10_000
 
 export const scaledMultiply = (base: number, scaledMult: number): number =>

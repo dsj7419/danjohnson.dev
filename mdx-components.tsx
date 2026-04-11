@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import type { ComponentPropsWithoutRef } from 'react'
 
+import { CopyButton } from '@/components/blocks/copy-button'
 import { Divider } from '@/components/primitives/divider'
 import { Heading } from '@/components/primitives/heading'
 
@@ -103,11 +104,14 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
         </code>
       )
     },
-    pre: (props: ComponentPropsWithoutRef<'pre'>) => (
+    pre: ({ children, ...props }: ComponentPropsWithoutRef<'pre'>) => (
       <pre
-        className="my-6 overflow-x-auto rounded-lg border border-(--color-border) bg-(--color-code-bg) p-4 font-mono text-sm leading-relaxed"
+        className="group relative my-6 overflow-x-auto rounded-lg border border-(--color-border) bg-(--color-code-bg) p-4 font-mono text-sm leading-relaxed"
         {...props}
-      />
+      >
+        <CopyButton />
+        {children}
+      </pre>
     ),
     table: (props: ComponentPropsWithoutRef<'table'>) => (
       <div className="overflow-x-auto">
