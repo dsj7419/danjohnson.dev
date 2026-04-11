@@ -81,7 +81,7 @@ export async function POST(request: Request) {
     if (error) {
       console.error(`[contact] Resend send failed: ${error.message}`)
       return NextResponse.json(
-        { success: false, error: 'Failed to send your message. Please try again.' },
+        { success: false, error: `Send failed: ${error.message}` },
         { status: 502 },
       )
     }
@@ -90,9 +90,6 @@ export async function POST(request: Request) {
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
     console.error(`[contact] Unexpected error: ${message}`)
-    return NextResponse.json(
-      { success: false, error: 'Something went wrong. Please try again.' },
-      { status: 500 },
-    )
+    return NextResponse.json({ success: false, error: `Unexpected: ${message}` }, { status: 500 })
   }
 }
