@@ -169,7 +169,7 @@ Do not add plugins without strong justification.
 
 ### Architecture Rules
 
-- **Server Components by default.** `'use client'` only when interactivity genuinely requires it. Currently only 3 client components: MobileNav, ThemeToggle, NavLink.
+- **Server Components by default.** `'use client'` only when interactivity genuinely requires it. Currently 4 client components: MobileNav, ThemeToggle, NavLink, CopyButton.
 - **Static-first, server-first.** All content pages statically generated at build time via `generateStaticParams` + `dynamicParams = false`.
 - **No new dependencies without justification.** Every dependency must earn its place.
 - **No margin on primitives for layout.** Section controls outer spacing, Stack controls inner spacing. Primitives use padding only.
@@ -311,12 +311,13 @@ What this means in practice:
 
 These were identified by independent code review agents (Apr 10, 2026) and are tracked but not blocking:
 
-| Item                                                                         | Severity | Notes                                                                                                                                                |
-| ---------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ContentEntry.content` field is phantom (`null as unknown as ComponentType`) | LOW      | Field exists in type but is never populated. Architectural decision: remove from type or make optional.                                              |
-| ContactCTA uses raw elements instead of primitives                           | LOW      | Partially justified: mailto can't use Button (internal links only), card layout doesn't map to Section. Would need Button to support external links. |
-| `color-scheme: light dark` may conflict with class-based dark toggle         | LOW      | Could cause scrollbar color mismatch. Needs visual verification.                                                                                     |
-| CSP `unsafe-inline` could be replaced with SHA-256 hash                      | LOW      | Future hardening. The inline theme script is a const — its hash could replace unsafe-inline.                                                         |
+| Item                                                                         | Severity | Notes                                                                                                                                                   |
+| ---------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ContentEntry.content` field is phantom (`null as unknown as ComponentType`) | LOW      | Field exists in type but is never populated. Architectural decision: remove from type or make optional.                                                 |
+| ContactCTA uses raw elements instead of primitives                           | LOW      | Partially justified: mailto can't use Button (internal links only), card layout doesn't map to Section. Would need Button to support external links.    |
+| `color-scheme: light dark` may conflict with class-based dark toggle         | LOW      | Could cause scrollbar color mismatch. Needs visual verification.                                                                                        |
+| CSP `unsafe-inline` could be replaced with SHA-256 hash                      | LOW      | Future hardening. The inline theme script is a const — its hash could replace unsafe-inline.                                                            |
+| Shiki `github-light` token contrast overrides applied                        | LOW      | Two tokens (`#D73A49`, `#E36209`) overridden via CSS `!important` on `--shiki-light` to pass WCAG AA. Original theme colors fail AA even on pure white. |
 
 ---
 
