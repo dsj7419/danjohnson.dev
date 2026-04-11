@@ -88,7 +88,7 @@ export async function submitContactForm(
     const resend = new Resend(apiKey)
 
     const { error } = await resend.emails.send({
-      from: 'danjohnson.dev <onboarding@resend.dev>',
+      from: 'Dan Johnson <dan@danjohnson.dev>',
       to: contactEmail,
       replyTo: parsed.data.email,
       subject: email.subject,
