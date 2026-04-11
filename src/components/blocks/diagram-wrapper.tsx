@@ -10,7 +10,7 @@ type DiagramWrapperProps = {
 export function DiagramWrapper({ title, caption, className = '', children }: DiagramWrapperProps) {
   return (
     <figure
-      className={`my-6 overflow-x-auto rounded-lg border border-(--color-border) ${className}`.trim()}
+      className={`my-6 overflow-x-auto rounded-lg border border-(--color-border) md:-mx-12 lg:-mx-24 ${className}`.trim()}
     >
       {title && (
         <div className="border-b border-(--color-border) bg-(--color-bg-alt) px-4 py-2">
