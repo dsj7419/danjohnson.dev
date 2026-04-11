@@ -138,7 +138,6 @@ export default function HomePage() {
                     category={entry.frontmatter.category}
                     date={entry.frontmatter.date}
                     readingTime={entry.readingTime}
-                    tags={entry.frontmatter.tags}
                   />
                 ))}
               </div>

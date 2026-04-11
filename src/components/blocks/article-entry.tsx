@@ -9,7 +9,6 @@ type ArticleEntryProps = {
   category: string
   date: string
   readingTime: number
-  tags: string[]
   className?: string
 }
 

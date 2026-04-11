@@ -97,19 +97,9 @@ function loadContentEntries<S extends z.ZodType>(
     })
 }
 
-function sortByDateWithFeatured(
-  entries: ContentEntry<CaseStudyFrontmatter>[],
-): ContentEntry<CaseStudyFrontmatter>[] {
-  return [...entries].sort((a, b) => {
-    if (a.frontmatter.featured && !b.frontmatter.featured) return -1
-    if (!a.frontmatter.featured && b.frontmatter.featured) return 1
-    return new Date(b.frontmatter.date).getTime() - new Date(a.frontmatter.date).getTime()
-  })
-}
-
-function sortByDate(
-  entries: ContentEntry<ArticleFrontmatter>[],
-): ContentEntry<ArticleFrontmatter>[] {
+function sortEntriesByFeaturedAndDate<T extends { featured?: boolean; date: string }>(
+  entries: ContentEntry<T>[],
+): ContentEntry<T>[] {
   return [...entries].sort((a, b) => {
     if (a.frontmatter.featured && !b.frontmatter.featured) return -1
     if (!a.frontmatter.featured && b.frontmatter.featured) return 1
@@ -118,7 +108,9 @@ function sortByDate(
 }
 
 export function getAllCaseStudies(): ContentEntry<CaseStudyFrontmatter>[] {
-  return sortByDateWithFeatured(loadContentEntries('case-studies', caseStudyFrontmatterSchema))
+  return sortEntriesByFeaturedAndDate(
+    loadContentEntries('case-studies', caseStudyFrontmatterSchema),
+  )
 }
 
 export function getCaseStudy(slug: string): ContentEntry<CaseStudyFrontmatter> | undefined {
@@ -126,7 +118,7 @@ export function getCaseStudy(slug: string): ContentEntry<CaseStudyFrontmatter> |
 }
 
 export function getAllArticles(): ContentEntry<ArticleFrontmatter>[] {
-  return sortByDate(loadContentEntries('writing', articleFrontmatterSchema))
+  return sortEntriesByFeaturedAndDate(loadContentEntries('writing', articleFrontmatterSchema))
 }
 
 export function getArticle(slug: string): ContentEntry<ArticleFrontmatter> | undefined {

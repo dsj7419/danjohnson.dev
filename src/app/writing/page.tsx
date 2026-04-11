@@ -41,7 +41,6 @@ export default function WritingPage() {
                   category={entry.frontmatter.category}
                   date={entry.frontmatter.date}
                   readingTime={entry.readingTime}
-                  tags={entry.frontmatter.tags}
                 />
               ))}
             </div>
