@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 type NavItem = {
   label: string
@@ -13,12 +13,15 @@ type MobileNavProps = {
   items: readonly NavItem[]
 }
 
+const PANEL_ID = 'mobile-nav-panel'
+
 export function MobileNav({ items }: MobileNavProps) {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
   const [lastPathname, setLastPathname] = useState(pathname)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const navRef = useRef<HTMLElement>(null)
 
-  // Close menu on any route change (site name link, internal links, browser nav)
   if (pathname !== lastPathname) {
     setLastPathname(pathname)
     setIsOpen(false)
@@ -32,12 +35,46 @@ export function MobileNav({ items }: MobileNavProps) {
     setIsOpen(false)
   }, [])
 
+  useEffect(() => {
+    if (!isOpen) return
+
+    function handleKeyDown(event: KeyboardEvent): void {
+      if (event.key === 'Escape') {
+        close()
+        buttonRef.current?.focus()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, close])
+
+  useEffect(() => {
+    if (isOpen) {
+      const firstLink = navRef.current?.querySelector<HTMLAnchorElement>('a')
+      firstLink?.focus()
+    }
+  }, [isOpen])
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [isOpen])
+
   return (
     <div className="md:hidden">
       <button
+        ref={buttonRef}
         onClick={toggle}
         aria-label={isOpen ? 'Close menu' : 'Open menu'}
         aria-expanded={isOpen}
+        aria-controls={PANEL_ID}
         className="rounded-md p-2 text-(--color-text-muted) transition-colors hover:text-(--color-text)"
         style={{ transitionDuration: 'var(--duration-fast)' }}
       >
@@ -76,7 +113,11 @@ export function MobileNav({ items }: MobileNavProps) {
       </button>
 
       {isOpen && (
-        <nav className="absolute left-0 right-0 top-full border-b border-(--color-border) bg-(--color-bg) px-content-x py-4">
+        <nav
+          ref={navRef}
+          id={PANEL_ID}
+          className="absolute left-0 right-0 top-full border-b border-(--color-border) bg-(--color-bg) px-content-x py-4"
+        >
           <ul className="space-y-3">
             {items.map((item) => (
               <li key={item.href}>
