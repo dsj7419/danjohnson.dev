@@ -7,7 +7,6 @@ export const siteConfig = {
   email: 'hello@danjohnson.dev',
   social: {
     github: 'https://github.com/dsj7419',
-    linkedin: 'https://linkedin.com/in/danjohnsondev',
   },
   nav: [
     { label: 'Work', href: '/work' },

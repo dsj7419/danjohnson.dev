@@ -17,7 +17,7 @@ export function personJsonLd() {
     name: siteConfig.name,
     url: siteConfig.url,
     jobTitle: 'Product Engineer & Systems Architect',
-    sameAs: [siteConfig.social.github, siteConfig.social.linkedin],
+    sameAs: [siteConfig.social.github],
   }
 }
 

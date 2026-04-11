@@ -30,12 +30,6 @@ describe('Footer', () => {
     expect(link).toHaveAttribute('rel', 'noopener noreferrer')
   })
 
-  it('renders LinkedIn link', () => {
-    render(<Footer />)
-    const link = screen.getByText('LinkedIn')
-    expect(link).toHaveAttribute('target', '_blank')
-  })
-
   it('renders RSS link', () => {
     render(<Footer />)
     const link = screen.getByText('RSS')
