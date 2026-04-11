@@ -1,4 +1,4 @@
-import { buildContactEmail } from '@/lib/email/contact-email'
+import { buildConfirmationEmail, buildContactEmail } from '@/lib/email/contact-email'
 import type { ContactFormData } from '@/lib/schemas/contact'
 
 function validData(): ContactFormData {
@@ -67,5 +67,36 @@ describe('buildContactEmail', () => {
     expect(html).toContain('<!DOCTYPE html>')
     expect(html).toContain('<html>')
     expect(html).toContain('</html>')
+  })
+})
+
+describe('buildConfirmationEmail', () => {
+  it('returns subject line', () => {
+    const { subject } = buildConfirmationEmail(validData())
+    expect(subject).toContain('Dan Johnson')
+  })
+
+  it('greets the submitter by name', () => {
+    const { html, text } = buildConfirmationEmail(validData())
+    expect(html).toContain('Hi Jane Smith')
+    expect(text).toContain('Hi Jane Smith')
+  })
+
+  it('includes the original message', () => {
+    const { html, text } = buildConfirmationEmail(validData())
+    expect(html).toContain('I am building a complex system')
+    expect(text).toContain('I am building a complex system')
+  })
+
+  it('includes a link to danjohnson.dev', () => {
+    const { html } = buildConfirmationEmail(validData())
+    expect(html).toContain('danjohnson.dev')
+  })
+
+  it('escapes HTML in the message', () => {
+    const data = { ...validData(), name: '<script>alert("xss")</script>' }
+    const { html } = buildConfirmationEmail(data)
+    expect(html).not.toContain('<script>')
+    expect(html).toContain('&lt;script&gt;')
   })
 })

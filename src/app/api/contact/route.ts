@@ -2,7 +2,7 @@ import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 
 import { checkRateLimit } from '@/lib/actions/rate-limit'
-import { buildContactEmail } from '@/lib/email/contact-email'
+import { buildConfirmationEmail, buildContactEmail } from '@/lib/email/contact-email'
 import { contactFormSchema } from '@/lib/schemas/contact'
 
 function extractClientIp(headersList: Headers): string {
@@ -85,6 +85,21 @@ export async function POST(request: Request) {
         { status: 502 },
       )
     }
+
+    const confirmation = buildConfirmationEmail(parsed.data)
+    await resend.emails
+      .send({
+        from: 'Dan Johnson <dan@danjohnson.dev>',
+        to: parsed.data.email,
+        replyTo: 'dan@danjohnson.dev',
+        subject: confirmation.subject,
+        html: confirmation.html,
+        text: confirmation.text,
+      })
+      .catch((err) => {
+        const msg = err instanceof Error ? err.message : 'Unknown'
+        console.error(`[contact] Confirmation email failed: ${msg}`)
+      })
 
     return NextResponse.json({ success: true })
   } catch (err) {
