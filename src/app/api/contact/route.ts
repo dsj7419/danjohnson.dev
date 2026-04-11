@@ -70,9 +70,9 @@ export async function POST(request: Request) {
     const resend = new Resend(apiKey)
 
     const { error } = await resend.emails.send({
-      from: 'danjohnson.dev Contact <contact@danjohnson.dev>',
+      from: `${parsed.data.name} via danjohnson.dev <noreply@danjohnson.dev>`,
       to: contactEmail,
-      replyTo: parsed.data.email,
+      replyTo: [parsed.data.email],
       subject: email.subject,
       html: email.html,
       text: email.text,
