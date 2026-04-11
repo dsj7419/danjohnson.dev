@@ -2,11 +2,6 @@ import { render, screen } from '@testing-library/react'
 
 import { ContactForm } from '@/components/blocks/contact-form'
 
-vi.mock('@/lib/actions/contact', () => ({
-  INITIAL_STATE: { success: false },
-  submitContactForm: vi.fn(),
-}))
-
 describe('ContactForm', () => {
   it('renders all form fields', () => {
     render(<ContactForm />)

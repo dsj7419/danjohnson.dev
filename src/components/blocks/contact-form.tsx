@@ -1,8 +1,12 @@
 'use client'
 
-import { useActionState, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
-import { type ContactActionState, INITIAL_STATE, submitContactForm } from '@/lib/actions/contact'
+type FormState = {
+  success: boolean
+  error?: string | undefined
+  fieldErrors?: Record<string, string> | undefined
+}
 
 function FormField({
   label,
@@ -53,12 +57,44 @@ function FormField({
 }
 
 export function ContactForm({ className = '' }: { className?: string }) {
-  const [state, formAction, pending] = useActionState<ContactActionState, FormData>(
-    submitContactForm,
-    INITIAL_STATE,
-  )
-  const formRef = useRef<HTMLFormElement>(null)
+  const [state, setState] = useState<FormState>({ success: false })
+  const [pending, setPending] = useState(false)
   const [submittedName, setSubmittedName] = useState('')
+  const formRef = useRef<HTMLFormElement>(null)
+
+  const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setPending(true)
+    setState({ success: false })
+
+    const form = e.currentTarget
+    const formData = new FormData(form)
+    setSubmittedName(String(formData.get('name') ?? ''))
+
+    try {
+      const body = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        company: formData.get('company'),
+        message: formData.get('message'),
+        referralSource: formData.get('referralSource'),
+        website: formData.get('website'),
+      }
+
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+
+      const data = (await res.json()) as FormState
+      setState(data)
+    } catch {
+      setState({ success: false, error: 'Something went wrong. Please try again.' })
+    } finally {
+      setPending(false)
+    }
+  }, [])
 
   if (state.success) {
     return (
@@ -89,10 +125,7 @@ export function ContactForm({ className = '' }: { className?: string }) {
             and get back to you soon.
           </p>
           <button
-            onClick={() => {
-              formRef.current?.reset()
-              window.location.reload()
-            }}
+            onClick={() => window.location.reload()}
             className="text-sm text-accent-500 underline underline-offset-4 transition-colors hover:text-accent-600"
             style={{ transitionDuration: 'var(--duration-fast)' }}
           >
@@ -121,14 +154,7 @@ export function ContactForm({ className = '' }: { className?: string }) {
         </div>
       )}
 
-      <form
-        ref={formRef}
-        action={(formData) => {
-          setSubmittedName(String(formData.get('name') ?? ''))
-          formAction(formData)
-        }}
-        className="space-y-5"
-      >
+      <form ref={formRef} onSubmit={handleSubmit} className="space-y-5">
         {/* Honeypot */}
         <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }} aria-hidden="true">
           <label htmlFor="website">Website</label>
