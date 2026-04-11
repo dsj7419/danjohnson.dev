@@ -15,8 +15,12 @@ import { getAllArticles, getAllCaseStudies } from '@/lib/content'
 import { websiteJsonLd } from '@/lib/structured-data'
 
 export default function HomePage() {
-  const featuredWork = getAllCaseStudies().filter((e) => e.frontmatter.featured)
-  const featuredWriting = getAllArticles().filter((e) => e.frontmatter.featured)
+  const featuredWork = getAllCaseStudies()
+    .filter((e) => e.frontmatter.featured)
+    .slice(0, 3)
+  const featuredWriting = getAllArticles()
+    .filter((e) => e.frontmatter.featured)
+    .slice(0, 3)
 
   return (
     <>
