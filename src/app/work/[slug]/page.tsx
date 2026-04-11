@@ -13,6 +13,7 @@ import { Stack } from '@/components/primitives/stack'
 import { Text } from '@/components/primitives/text'
 import { getAllCaseStudies, getCaseStudy } from '@/lib/content'
 import { buildContentMetadata } from '@/lib/metadata'
+import { articleJsonLd } from '@/lib/structured-data'
 
 type PageProps = {
   params: Promise<{ slug: string }>
@@ -67,6 +68,20 @@ export default async function CaseStudyPage({ params }: PageProps) {
 
   return (
     <article>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            articleJsonLd({
+              title: frontmatter.title,
+              description: frontmatter.description,
+              date: frontmatter.date,
+              url: `/work/${slug}`,
+              updatedAt: frontmatter.updatedAt,
+            }),
+          ),
+        }}
+      />
       <Section background="alt">
         <Container>
           <Stack gap={6}>

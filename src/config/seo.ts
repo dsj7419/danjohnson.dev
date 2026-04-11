@@ -22,6 +22,9 @@ export const defaultMetadata: Metadata = {
     title: siteConfig.title,
     description: siteConfig.description,
   },
+  alternates: {
+    canonical: siteConfig.url,
+  },
   robots: {
     index: true,
     follow: true,

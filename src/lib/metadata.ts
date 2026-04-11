@@ -51,6 +51,8 @@ export function buildContentMetadata({
       description,
       url: path,
       type,
+      siteName: 'Dan Johnson',
+      locale: 'en_US',
       ...(publishedTime !== undefined && { publishedTime }),
       ...(modifiedTime !== undefined && { modifiedTime }),
       ...(ogImage !== undefined && { images: [{ url: ogImage }] }),
