@@ -1,7 +1,6 @@
 'use server'
 
 import { headers } from 'next/headers'
-import { Resend } from 'resend'
 
 import { buildContactEmail } from '@/lib/email/contact-email'
 import { contactFormSchema } from '@/lib/schemas/contact'
@@ -85,6 +84,7 @@ export async function submitContactForm(
     }
 
     const email = buildContactEmail(parsed.data)
+    const { Resend } = await import('resend')
     const resend = new Resend(apiKey)
 
     const { error } = await resend.emails.send({
