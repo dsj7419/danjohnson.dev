@@ -1,3 +1,5 @@
+import type { Metadata } from 'next'
+
 import { Container } from '@/components/primitives/container'
 import { Heading } from '@/components/primitives/heading'
 import { Section } from '@/components/primitives/section'
@@ -6,7 +8,7 @@ import { getPage } from '@/lib/content'
 import { buildPageMetadata } from '@/lib/metadata'
 import { personJsonLd } from '@/lib/structured-data'
 
-export function generateMetadata() {
+export function generateMetadata(): Metadata {
   const page = getPage('about')
   if (!page) return {}
   return buildPageMetadata({
@@ -29,7 +31,7 @@ export default async function AboutPage() {
         <Container width="reading">
           <Stack gap={8}>
             <Heading level={1}>About</Heading>
-            <Stack gap={6} className="[&>:first-child]:mt-0">
+            <Stack gap={6} className="*:first:mt-0">
               <Content />
             </Stack>
           </Stack>

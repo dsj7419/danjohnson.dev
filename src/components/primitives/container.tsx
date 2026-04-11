@@ -10,9 +10,9 @@ type ContainerProps = {
 }
 
 const widthStyles: Record<ContainerWidth, string> = {
-  reading: 'max-w-[var(--width-reading)]',
-  content: 'max-w-[var(--width-content)]',
-  wide: 'max-w-[var(--width-wide)]',
+  reading: 'max-w-(--width-reading)',
+  content: 'max-w-(--width-content)',
+  wide: 'max-w-(--width-wide)',
 }
 
 export function Container({
@@ -22,9 +22,7 @@ export function Container({
   children,
 }: ContainerProps) {
   return (
-    <Tag
-      className={`mx-auto px-[var(--spacing-content-x)] ${widthStyles[width]} ${className}`.trim()}
-    >
+    <Tag className={`mx-auto px-content-x ${widthStyles[width]} ${className}`.trim()}>
       {children}
     </Tag>
   )

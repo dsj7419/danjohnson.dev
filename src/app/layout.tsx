@@ -1,11 +1,13 @@
 import '@/styles/globals.css'
 
+import type { Metadata } from 'next'
+
 import { Footer } from '@/components/layout/footer'
 import { Header } from '@/components/layout/header'
 import { defaultMetadata } from '@/config/seo'
 import { fontBody, fontHeading, fontMono } from '@/lib/fonts'
 
-export const metadata = defaultMetadata
+export const metadata: Metadata = defaultMetadata
 
 const themeScript =
   `(function(){try{var t=localStorage.getItem('theme');var d=t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme:dark)').matches);document.documentElement.classList.toggle('dark',d)}catch(e){}})()` as const
@@ -20,10 +22,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="flex min-h-screen flex-col bg-[var(--color-bg)] text-[var(--color-text)] antialiased">
+      <body className="flex min-h-screen flex-col bg-(--color-bg) text-(--color-text) antialiased">
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-accent-500 focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-100 focus:rounded-md focus:bg-accent-500 focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white"
         >
           Skip to content
         </a>

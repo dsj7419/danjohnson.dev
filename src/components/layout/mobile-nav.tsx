@@ -38,7 +38,7 @@ export function MobileNav({ items }: MobileNavProps) {
         onClick={toggle}
         aria-label={isOpen ? 'Close menu' : 'Open menu'}
         aria-expanded={isOpen}
-        className="rounded-md p-2 text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)]"
+        className="rounded-md p-2 text-(--color-text-muted) transition-colors hover:text-(--color-text)"
         style={{ transitionDuration: 'var(--duration-fast)' }}
       >
         {isOpen ? (
@@ -76,7 +76,7 @@ export function MobileNav({ items }: MobileNavProps) {
       </button>
 
       {isOpen && (
-        <nav className="absolute left-0 right-0 top-full border-b border-[var(--color-border)] bg-[var(--color-bg)] px-[var(--spacing-content-x)] py-4">
+        <nav className="absolute left-0 right-0 top-full border-b border-(--color-border) bg-(--color-bg) px-content-x py-4">
           <ul className="space-y-3">
             {items.map((item) => (
               <li key={item.href}>
@@ -86,7 +86,7 @@ export function MobileNav({ items }: MobileNavProps) {
                   className={`block text-sm transition-colors ${
                     pathname === item.href || pathname.startsWith(`${item.href}/`)
                       ? 'font-medium text-accent-500'
-                      : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
+                      : 'text-(--color-text-muted) hover:text-(--color-text)'
                   }`}
                   style={{ transitionDuration: 'var(--duration-fast)' }}
                 >

@@ -11,9 +11,9 @@ type FigureProps = {
 }
 
 const widthStyles: Record<FigureWidth, string> = {
-  default: 'max-w-[var(--width-reading)]',
-  wide: 'max-w-[var(--width-content)]',
-  full: 'max-w-[var(--width-wide)]',
+  default: 'max-w-(--width-reading)',
+  wide: 'max-w-(--width-content)',
+  full: 'max-w-(--width-wide)',
 }
 
 export function Figure({ src, alt, caption, width = 'default', className = '' }: FigureProps) {
@@ -28,7 +28,7 @@ export function Figure({ src, alt, caption, width = 'default', className = '' }:
         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
       />
       {caption && (
-        <figcaption className="mt-2 text-center text-sm text-[var(--color-text-muted)]">
+        <figcaption className="mt-2 text-center text-sm text-(--color-text-muted)">
           {caption}
         </figcaption>
       )}

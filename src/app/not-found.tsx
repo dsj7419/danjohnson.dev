@@ -7,7 +7,7 @@ import { Text } from '@/components/primitives/text'
 
 export default function NotFound() {
   return (
-    <div className="flex flex-1 items-center justify-center py-[var(--spacing-section-y)]">
+    <div className="flex flex-1 items-center justify-center py-section-y">
       <Container width="reading">
         <Stack gap={6} className="text-center">
           <Eyebrow>404</Eyebrow>

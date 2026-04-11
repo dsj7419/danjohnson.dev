@@ -39,11 +39,11 @@ describe('Text', () => {
 
   it('applies muted color for small and caption', () => {
     const { unmount } = render(<Text variant="small">Muted</Text>)
-    expect(screen.getByText('Muted').className).toContain('text-[var(--color-text-muted)]')
+    expect(screen.getByText('Muted').className).toContain('text-(--color-text-muted)')
     unmount()
 
     render(<Text variant="caption">Also muted</Text>)
-    expect(screen.getByText('Also muted').className).toContain('text-[var(--color-text-muted)]')
+    expect(screen.getByText('Also muted').className).toContain('text-(--color-text-muted)')
   })
 
   it('renders as a custom element via as prop', () => {

@@ -8,11 +8,11 @@ import { ThemeToggle } from './theme-toggle'
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-50 border-b border-[var(--color-border)] bg-[var(--color-bg)]/95 backdrop-blur-sm">
-      <div className="mx-auto flex max-w-[var(--width-wide)] items-center justify-between px-[var(--spacing-content-x)] py-4">
+    <header className="sticky top-0 z-50 border-b border-(--color-border) bg-(--color-bg)/95 backdrop-blur-sm">
+      <div className="mx-auto flex max-w-(--width-wide) items-center justify-between px-content-x py-4">
         <Link
           href="/"
-          className="font-heading text-lg font-semibold tracking-tight text-[var(--color-text)]"
+          className="font-heading text-lg font-semibold tracking-tight text-(--color-text)"
         >
           {siteConfig.name}
         </Link>

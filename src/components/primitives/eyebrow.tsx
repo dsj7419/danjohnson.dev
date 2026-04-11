@@ -8,7 +8,7 @@ type EyebrowProps = {
 export function Eyebrow({ className = '', children }: EyebrowProps) {
   return (
     <span
-      className={`font-mono text-xs font-medium uppercase tracking-widest text-[var(--color-text-muted)] ${className}`.trim()}
+      className={`font-mono text-xs font-medium uppercase tracking-widest text-(--color-text-muted) ${className}`.trim()}
     >
       {children}
     </span>

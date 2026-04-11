@@ -1,3 +1,5 @@
+import type { Metadata } from 'next'
+
 import { ProjectCard } from '@/components/blocks/project-card'
 import { Container } from '@/components/primitives/container'
 import { Heading } from '@/components/primitives/heading'
@@ -7,7 +9,7 @@ import { Text } from '@/components/primitives/text'
 import { getAllCaseStudies } from '@/lib/content'
 import { buildPageMetadata } from '@/lib/metadata'
 
-export const metadata = buildPageMetadata({
+export const metadata: Metadata = buildPageMetadata({
   title: 'Work',
   description:
     'Case studies of complex software systems, AI-enabled products, and architecture-heavy applications.',

@@ -25,7 +25,7 @@ describe('Callout', () => {
   it('applies elevated background', () => {
     const { container } = render(<Callout variant="note">Content</Callout>)
     const aside = container.querySelector('aside')
-    expect(aside?.className).toContain('bg-[var(--color-bg-elevated)]')
+    expect(aside?.className).toContain('bg-(--color-bg-elevated)')
   })
 
   it('applies accent border for note variant', () => {

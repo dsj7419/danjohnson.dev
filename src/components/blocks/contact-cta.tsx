@@ -6,10 +6,10 @@ type ContactCTAProps = {
 export function ContactCTA({ email, className = '' }: ContactCTAProps) {
   return (
     <section
-      className={`rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-8 text-center ${className}`.trim()}
+      className={`rounded-lg border border-(--color-border) bg-(--color-bg-alt) p-8 text-center ${className}`.trim()}
     >
       <p className="mb-2 text-lg font-semibold">Interested in working together?</p>
-      <p className="mb-6 text-sm text-[var(--color-text-muted)]">
+      <p className="mb-6 text-sm text-(--color-text-muted)">
         I take on a limited number of serious engineering projects. Tell me what you are building.
       </p>
       <a

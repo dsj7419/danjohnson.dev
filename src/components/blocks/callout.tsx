@@ -19,7 +19,7 @@ const borderColors: Record<CalloutVariant, string> = {
 export function Callout({ variant, title, className = '', children }: CalloutProps) {
   return (
     <aside
-      className={`rounded-r-lg border border-[var(--color-border)] border-l-4 ${borderColors[variant]} bg-[var(--color-bg-elevated)] p-4 ${className}`.trim()}
+      className={`rounded-r-lg border border-(--color-border) border-l-4 ${borderColors[variant]} bg-(--color-bg-elevated) p-4 ${className}`.trim()}
     >
       {title && <p className="mb-2 text-sm font-semibold">{title}</p>}
       <div className="text-sm leading-relaxed">{children}</div>

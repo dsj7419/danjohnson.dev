@@ -10,15 +10,13 @@ type SectionProps = {
 
 const backgroundStyles: Record<SectionBackground, string> = {
   default: '',
-  alt: 'bg-[var(--color-bg-alt)]',
-  elevated: 'bg-[var(--color-bg-elevated)]',
+  alt: 'bg-(--color-bg-alt)',
+  elevated: 'bg-(--color-bg-elevated)',
 }
 
 export function Section({ background = 'default', className = '', children }: SectionProps) {
   return (
-    <section
-      className={`py-[var(--spacing-section-y)] ${backgroundStyles[background]} ${className}`.trim()}
-    >
+    <section className={`py-section-y ${backgroundStyles[background]} ${className}`.trim()}>
       {children}
     </section>
   )

@@ -17,7 +17,7 @@ describe('Section', () => {
   it('applies vertical section spacing', () => {
     render(<Section>Spaced</Section>)
     const el = screen.getByText('Spaced')
-    expect(el.className).toContain('py-[var(--spacing-section-y)]')
+    expect(el.className).toContain('py-section-y')
   })
 
   it('applies default background by default', () => {
@@ -29,13 +29,13 @@ describe('Section', () => {
   it('applies alt background when specified', () => {
     render(<Section background="alt">Alt</Section>)
     const el = screen.getByText('Alt')
-    expect(el.className).toContain('bg-[var(--color-bg-alt)]')
+    expect(el.className).toContain('bg-(--color-bg-alt)')
   })
 
   it('applies elevated background when specified', () => {
     render(<Section background="elevated">Elevated</Section>)
     const el = screen.getByText('Elevated')
-    expect(el.className).toContain('bg-[var(--color-bg-elevated)]')
+    expect(el.className).toContain('bg-(--color-bg-elevated)')
   })
 
   it('forwards additional className', () => {

@@ -12,7 +12,7 @@ describe('Divider', () => {
   it('applies border color token', () => {
     const { container } = render(<Divider />)
     const hr = container.querySelector('hr')
-    expect(hr?.className).toContain('border-[var(--color-border)]')
+    expect(hr?.className).toContain('border-(--color-border)')
   })
 
   it('has no visible border-top only', () => {

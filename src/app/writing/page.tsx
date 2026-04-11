@@ -1,3 +1,5 @@
+import type { Metadata } from 'next'
+
 import { ArticleEntry } from '@/components/blocks/article-entry'
 import { Container } from '@/components/primitives/container'
 import { Heading } from '@/components/primitives/heading'
@@ -7,7 +9,7 @@ import { Text } from '@/components/primitives/text'
 import { getAllArticles } from '@/lib/content'
 import { buildPageMetadata } from '@/lib/metadata'
 
-export const metadata = buildPageMetadata({
+export const metadata: Metadata = buildPageMetadata({
   title: 'Writing',
   description:
     'Articles on software architecture, engineering philosophy, AI integration, and lessons from real projects.',

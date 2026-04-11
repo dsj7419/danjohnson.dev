@@ -35,7 +35,7 @@ describe('Eyebrow', () => {
 
   it('applies muted text color', () => {
     render(<Eyebrow>Muted</Eyebrow>)
-    expect(screen.getByText('Muted').className).toContain('text-[var(--color-text-muted)]')
+    expect(screen.getByText('Muted').className).toContain('text-(--color-text-muted)')
   })
 
   it('forwards additional className', () => {

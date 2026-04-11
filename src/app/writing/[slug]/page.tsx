@@ -101,7 +101,7 @@ export default async function ArticlePage({ params }: PageProps) {
           <div className="pt-8 text-center">
             <Link
               href="/writing"
-              className="text-sm text-[var(--color-text-muted)] transition-colors hover:text-accent-500"
+              className="text-sm text-(--color-text-muted) transition-colors hover:text-accent-500"
               style={{ transitionDuration: 'var(--duration-fast)' }}
             >
               &larr; More writing

@@ -38,7 +38,7 @@ describe('DiagramWrapper', () => {
     )
     const figure = container.querySelector('figure')
     expect(figure?.className).toContain('border')
-    expect(figure?.className).toContain('bg-[var(--color-bg-elevated)]')
+    expect(figure?.className).toContain('bg-(--color-bg-elevated)')
   })
 
   it('does not render figcaption without caption', () => {

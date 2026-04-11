@@ -21,13 +21,13 @@ export function RelatedContent({ items, className = '' }: RelatedContentProps) {
 
   return (
     <div className={`space-y-3 ${className}`.trim()}>
-      <p className="font-mono text-xs font-medium uppercase tracking-widest text-[var(--color-text-muted)]">
+      <p className="font-mono text-xs font-medium uppercase tracking-widest text-(--color-text-muted)">
         Related
       </p>
       <ul className="space-y-2">
         {items.map((item) => (
           <li key={item.path} className="flex items-baseline gap-2">
-            <span className="rounded bg-[var(--color-bg-alt)] px-1.5 py-0.5 font-mono text-xs text-[var(--color-text-faint)]">
+            <span className="rounded bg-(--color-bg-alt) px-1.5 py-0.5 font-mono text-xs text-(--color-text-faint)">
               {typeLabels[item.type]}
             </span>
             <Link

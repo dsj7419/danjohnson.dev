@@ -26,14 +26,14 @@ export default function HomePage() {
       />
 
       {/* Hero */}
-      <Section className="!py-12 md:!py-16">
+      <Section className="py-12! md:py-16!">
         <Container>
           <Stack gap={6}>
             <Eyebrow>Product Engineer &amp; Systems Architect</Eyebrow>
             <Heading level={1} className="text-5xl">
               Dan Johnson
             </Heading>
-            <Text variant="lead" className="max-w-[var(--width-reading)]">
+            <Text variant="lead" className="max-w-(--width-reading)">
               I design and build complex, high-reliability software systems, AI-enabled products,
               and performance-critical applications with a focus on long-term architecture,
               security, and real-world usability.
@@ -51,7 +51,7 @@ export default function HomePage() {
                 <Heading level={2}>Selected Work</Heading>
                 <Link
                   href="/work"
-                  className="text-sm text-[var(--color-text-muted)] transition-colors hover:text-accent-500"
+                  className="text-sm text-(--color-text-muted) transition-colors hover:text-accent-500"
                   style={{ transitionDuration: 'var(--duration-fast)' }}
                 >
                   View all &rarr;
@@ -122,7 +122,7 @@ export default function HomePage() {
                 <Heading level={2}>Writing</Heading>
                 <Link
                   href="/writing"
-                  className="text-sm text-[var(--color-text-muted)] transition-colors hover:text-accent-500"
+                  className="text-sm text-(--color-text-muted) transition-colors hover:text-accent-500"
                   style={{ transitionDuration: 'var(--duration-fast)' }}
                 >
                   View all &rarr;

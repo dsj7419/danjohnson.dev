@@ -26,9 +26,9 @@ const variantStyles: Record<ButtonVariant, string> = {
   primary:
     'bg-accent-500 text-white hover:bg-accent-600 disabled:opacity-50 disabled:pointer-events-none',
   secondary:
-    'border border-[var(--color-border)] text-[var(--color-text)] hover:bg-[var(--color-bg-alt)] disabled:opacity-50 disabled:pointer-events-none',
+    'border border-(--color-border) text-(--color-text) hover:bg-(--color-bg-alt) disabled:opacity-50 disabled:pointer-events-none',
   ghost:
-    'text-[var(--color-text-muted)] hover:text-[var(--color-text)] disabled:opacity-50 disabled:pointer-events-none',
+    'text-(--color-text-muted) hover:text-(--color-text) disabled:opacity-50 disabled:pointer-events-none',
 }
 
 const baseStyles =

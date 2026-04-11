@@ -88,7 +88,7 @@ export default async function CaseStudyPage({ params }: PageProps) {
               {frontmatter.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="rounded-full bg-[var(--color-bg)] px-2.5 py-0.5 font-mono text-xs text-[var(--color-text-faint)]"
+                  className="rounded-full bg-(--color-bg) px-2.5 py-0.5 font-mono text-xs text-(--color-text-faint)"
                 >
                   {tag}
                 </span>

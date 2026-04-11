@@ -39,8 +39,8 @@ export function CaseStudyMeta({
     <div className={`flex flex-wrap gap-x-6 gap-y-2 ${className}`.trim()}>
       {items.map((item) => (
         <div key={item.label} className="flex items-baseline gap-1.5">
-          <span className="text-xs text-[var(--color-text-faint)]">{item.label}</span>
-          <span className="font-mono text-sm text-[var(--color-text-muted)]">{item.value}</span>
+          <span className="text-xs text-(--color-text-faint)">{item.label}</span>
+          <span className="font-mono text-sm text-(--color-text-muted)">{item.value}</span>
         </div>
       ))}
     </div>

@@ -58,7 +58,7 @@ function MdxImage({ src, alt }: ComponentPropsWithoutRef<'img'>) {
         sizes="(max-width: 768px) 100vw, 800px"
       />
       {alt && (
-        <figcaption className="mt-2 text-center text-sm text-[var(--color-text-muted)]">
+        <figcaption className="mt-2 text-center text-sm text-(--color-text-muted)">
           {alt}
         </figcaption>
       )}
@@ -87,7 +87,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     li: (props: ComponentPropsWithoutRef<'li'>) => <li className="pl-1" {...props} />,
     blockquote: (props: ComponentPropsWithoutRef<'blockquote'>) => (
       <blockquote
-        className="my-6 border-l-2 border-accent-500 pl-4 font-heading italic text-[var(--color-text-muted)]"
+        className="my-6 border-l-2 border-accent-500 pl-4 font-heading italic text-(--color-text-muted)"
         {...props}
       />
     ),
@@ -96,7 +96,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
       if (hasLanguage) return <code {...props}>{children}</code>
       return (
         <code
-          className="rounded bg-[var(--color-code-bg)] px-1.5 py-0.5 font-mono text-sm text-[var(--color-code-text)]"
+          className="rounded bg-(--color-code-bg) px-1.5 py-0.5 font-mono text-sm text-(--color-code-text)"
           {...props}
         >
           {children}
@@ -105,7 +105,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     },
     pre: (props: ComponentPropsWithoutRef<'pre'>) => (
       <pre
-        className="my-6 overflow-x-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-code-bg)] p-4 font-mono text-sm leading-relaxed"
+        className="my-6 overflow-x-auto rounded-lg border border-(--color-border) bg-(--color-code-bg) p-4 font-mono text-sm leading-relaxed"
         {...props}
       />
     ),
@@ -115,13 +115,13 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
       </div>
     ),
     thead: (props: ComponentPropsWithoutRef<'thead'>) => (
-      <thead className="border-b border-[var(--color-border)]" {...props} />
+      <thead className="border-b border-(--color-border)" {...props} />
     ),
     th: (props: ComponentPropsWithoutRef<'th'>) => (
       <th className="px-3 py-2 text-left font-semibold" {...props} />
     ),
     td: (props: ComponentPropsWithoutRef<'td'>) => (
-      <td className="border-t border-[var(--color-border)] px-3 py-2" {...props} />
+      <td className="border-t border-(--color-border) px-3 py-2" {...props} />
     ),
     strong: (props: ComponentPropsWithoutRef<'strong'>) => (
       <strong className="font-semibold" {...props} />

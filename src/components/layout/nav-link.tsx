@@ -18,7 +18,7 @@ export function NavLink({ href, children }: NavLinkProps) {
       className={`text-sm transition-colors ${
         isActive
           ? 'font-medium text-accent-500'
-          : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
+          : 'text-(--color-text-muted) hover:text-(--color-text)'
       }`}
       style={{ transitionDuration: 'var(--duration-fast)' }}
     >

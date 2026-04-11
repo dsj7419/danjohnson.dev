@@ -40,7 +40,7 @@ export function ThemeToggle() {
     <button
       onClick={cycle}
       aria-label={`Theme: ${theme}. Click to change.`}
-      className="rounded-md p-2 text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)]"
+      className="rounded-md p-2 text-(--color-text-muted) transition-colors hover:text-(--color-text)"
       style={{ transitionDuration: 'var(--duration-fast)' }}
     >
       {theme === 'light' && (

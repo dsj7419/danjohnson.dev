@@ -11,9 +11,9 @@ type TextProps = {
 
 const variantStyles: Record<TextVariant, string> = {
   body: 'text-base leading-relaxed',
-  lead: 'text-lg leading-relaxed text-[var(--color-text-muted)]',
-  small: 'text-sm text-[var(--color-text-muted)]',
-  caption: 'text-xs text-[var(--color-text-muted)]',
+  lead: 'text-lg leading-relaxed text-(--color-text-muted)',
+  small: 'text-sm text-(--color-text-muted)',
+  caption: 'text-xs text-(--color-text-muted)',
 }
 
 export function Text({ variant = 'body', as: Tag = 'p', className = '', children }: TextProps) {

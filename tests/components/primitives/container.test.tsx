@@ -11,19 +11,19 @@ describe('Container', () => {
   it('applies content width by default', () => {
     render(<Container>Content</Container>)
     const el = screen.getByText('Content')
-    expect(el.className).toContain('max-w-[var(--width-content)]')
+    expect(el.className).toContain('max-w-(--width-content)')
   })
 
   it('applies reading width when specified', () => {
     render(<Container width="reading">Prose</Container>)
     const el = screen.getByText('Prose')
-    expect(el.className).toContain('max-w-[var(--width-reading)]')
+    expect(el.className).toContain('max-w-(--width-reading)')
   })
 
   it('applies wide width when specified', () => {
     render(<Container width="wide">Wide</Container>)
     const el = screen.getByText('Wide')
-    expect(el.className).toContain('max-w-[var(--width-wide)]')
+    expect(el.className).toContain('max-w-(--width-wide)')
   })
 
   it('centers content with mx-auto', () => {
@@ -35,7 +35,7 @@ describe('Container', () => {
   it('applies horizontal padding', () => {
     render(<Container>Padded</Container>)
     const el = screen.getByText('Padded')
-    expect(el.className).toContain('px-[var(--spacing-content-x)]')
+    expect(el.className).toContain('px-content-x')
   })
 
   it('renders as a custom element via as prop', () => {

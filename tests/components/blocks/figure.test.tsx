@@ -31,18 +31,18 @@ describe('Figure', () => {
   it('applies default width constraint', () => {
     const { container } = render(<Figure src="/test.png" alt="Test" />)
     const figure = container.querySelector('figure')
-    expect(figure?.className).toContain('max-w-[var(--width-reading)]')
+    expect(figure?.className).toContain('max-w-(--width-reading)')
   })
 
   it('applies wide width when specified', () => {
     const { container } = render(<Figure src="/test.png" alt="Test" width="wide" />)
     const figure = container.querySelector('figure')
-    expect(figure?.className).toContain('max-w-[var(--width-content)]')
+    expect(figure?.className).toContain('max-w-(--width-content)')
   })
 
   it('applies full width when specified', () => {
     const { container } = render(<Figure src="/test.png" alt="Test" width="full" />)
     const figure = container.querySelector('figure')
-    expect(figure?.className).toContain('max-w-[var(--width-wide)]')
+    expect(figure?.className).toContain('max-w-(--width-wide)')
   })
 })

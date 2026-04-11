@@ -19,24 +19,24 @@ export function ProjectCard({
 }: ProjectCardProps) {
   return (
     <article
-      className={`rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-6 transition-colors hover:border-accent-500/50 ${className}`.trim()}
+      className={`rounded-lg border border-(--color-border) bg-(--color-bg-elevated) p-6 transition-colors hover:border-accent-500/50 ${className}`.trim()}
       style={{ transitionDuration: 'var(--duration-normal)' }}
     >
       <div className="space-y-3">
-        <p className="font-mono text-xs text-[var(--color-text-muted)]">{role}</p>
+        <p className="font-mono text-xs text-(--color-text-muted)">{role}</p>
         <Link
           href={`/work/${slug}`}
-          className="block font-heading text-xl font-semibold tracking-tight text-[var(--color-text)] hover:text-accent-500"
+          className="block font-heading text-xl font-semibold tracking-tight text-(--color-text) hover:text-accent-500"
           style={{ transitionDuration: 'var(--duration-fast)' }}
         >
           {title}
         </Link>
-        <p className="text-sm leading-relaxed text-[var(--color-text-muted)]">{description}</p>
+        <p className="text-sm leading-relaxed text-(--color-text-muted)">{description}</p>
         <div className="flex flex-wrap gap-2 pt-2">
           {tags.map((tag) => (
             <span
               key={tag}
-              className="rounded-full bg-[var(--color-bg-alt)] px-2.5 py-0.5 font-mono text-xs text-[var(--color-text-faint)]"
+              className="rounded-full bg-(--color-bg-alt) px-2.5 py-0.5 font-mono text-xs text-(--color-text-faint)"
             >
               {tag}
             </span>

@@ -3,5 +3,5 @@ type DividerProps = {
 }
 
 export function Divider({ className = '' }: DividerProps) {
-  return <hr className={`border-t border-b-0 border-[var(--color-border)] ${className}`.trim()} />
+  return <hr className={`border-t border-b-0 border-(--color-border) ${className}`.trim()} />
 }
