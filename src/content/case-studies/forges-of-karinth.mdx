@@ -1,0 +1,342 @@
+---
+title: 'Forges of Karinth — Deterministic Simulation Engine with Provable Correctness'
+description: 'Architecture and engineering of a browser-based idle RPG where the core problem is not rendering frames but making simulation outcomes reproducible, tunable, and provable across every runtime.'
+date: '2026-04-10'
+tags:
+  - deterministic-simulation
+  - systems-architecture
+  - property-based-testing
+  - game-engine
+  - product-engineering
+featured: true
+draft: false
+role: 'Systems Architect / Engineer'
+organization: 'Internal Product'
+stack:
+  - TypeScript (strict)
+  - Node 22
+  - React 19
+  - Zustand
+  - Vitest
+  - fast-check
+  - Postgres (Neon)
+  - Redis
+  - Drizzle ORM
+  - pnpm + Turborepo
+  - Railway
+  - Vercel
+metrics:
+  - label: 'Combat Invariants'
+    value: '7 proven'
+  - label: 'Determinism Proofs'
+    value: '40K battles/CI'
+  - label: 'Rebalance'
+    value: '221→7 runs'
+  - label: 'Test Suite'
+    value: '2,250+'
+related:
+  - '/writing/using-ai-in-real-products'
+  - '/work/chimera'
+  - '/how-i-build'
+---
+
+import { Callout } from '@/components/blocks/callout'
+import { DiagramWrapper } from '@/components/blocks/diagram-wrapper'
+import { Quote } from '@/components/blocks/quote'
+import { RelatedContent } from '@/components/blocks/related-content'
+
+## Overview
+
+Forges of Karinth is a browser-based idle RPG where the core engineering problem is not rendering frames but making simulation outcomes reproducible, tunable, and provable. The player builds a forge, creates echoes, runs them through rifts, and progresses through a system where combat is a deterministic calculation rather than an animation-driven event.
+
+Today the system is in internal alpha with the deterministic engine, server runtime, client shell, hardening layers, and rebalance pipeline all built and governed through formal gates. Twenty-one epics closed. Eight packages with a hard-enforced import DAG. 2,250+ tests across 255 files, including property-based invariant proofs running thousands of seeded battles per CI pass.
+
+What makes it technically interesting is the constraint that reshapes everything: given the same seed and the same ordered inputs, the engine must produce byte-identical outputs across Node versions, platforms, sessions, and replays. Not "approximately the same." Not "same to six decimal places." Byte-identical after stable JSON serialization with sorted keys. That constraint turns a game engine into something closer to a financial ledger or a rules engine. It reshapes how you handle randomness, arithmetic, state, testing, balance tuning, and package boundaries. Most indie games accept small nondeterminism as the cost of shipping. This one does not.
+
+## The Problem
+
+The moment combat outcomes matter across client, server, replay, balance tuning, and incident triage, nondeterminism becomes poison. If the same battle can resolve differently depending on timing, floating-point drift, or an ambient `Math.random()` call, you lose five things simultaneously: replay correctness, property-based testing, balance evidence, incident triage, and anti-cheat validation.
+
+The failure mode is concrete. A player loses a battle. You pull the seed, rerun the fight, and get a different outcome because one newly-added effect consumed one extra RNG draw before the speed tiebreak. Now you cannot tell whether the player hit a bug or you changed the engine. Confidence dies, then velocity dies, then the project dies.
+
+<Callout variant="insight" title="The deeper constraint">
+  There is no "a little bit nondeterministic." Once any non-deterministic call
+  exists inside the simulation, every test becomes flaky in ways you cannot
+  reproduce, and every balance change becomes superstition. The entire
+  architecture is pointed at making that failure class impossible to introduce
+  by accident.
+</Callout>
+
+### Constraints
+
+- **Cross-platform determinism.** Byte-identical results across Node 20, Node 22, Windows dev, Linux CI, Linux production. Verified in CI matrix.
+- **Replay contract.** Same seed plus same action log must reproduce any historical battle, unless an ADR explicitly unlocks the contract.
+- **Property-based testing viability.** The fast-check shrinker needs reproducibility to find minimal counterexamples. Ambient randomness makes shrinking impossible.
+- **Balance evidence over intuition.** Before/after rebalance data must be measurable, not felt. That requires deterministic simulation runs.
+- **Server-authoritative gameplay.** The client cannot compute state. Cheating requires compromising the server, not the browser.
+
+## Approach
+
+Five principles emerged from the problem framing.
+
+**Seeded PRNG as an explicit dependency, never ambient.** `Math.random()` is banned by ESLint rule inside the engine package. Every function that needs randomness receives it as a parameter. That threading is the cost; the benefit is that every reviewer can see exactly what consumes entropy at every call site.
+
+**Integer-scaled arithmetic for combat math.** Floating-point "usually the same" is not good enough. `COMBAT_SCALE = 10000` turns every multiplier into an integer operation with defined truncation. The engine defines what multiply and round mean, rather than hoping the runtime agrees.
+
+**Hard package boundaries enforced structurally.** The monorepo is split into shared-types, protocol, game-data, game-engine, domains, db, server, and client, with strict one-way dependency rules. The client cannot see the engine — enforced by ESLint rules and structural tests that fail the build on illegal imports. A client that cannot compute state cannot forge state.
+
+**FormulaSpec data over hardcoded balance code.** Balance is typed data, not embedded calculations. Rebalancing changes constants in data files, not engine code. The compiler catches shape violations. Evidence harnesses catch outcome regressions.
+
+**Proof-driven verification, not example-only testing.** Property-based tests prove that entire classes of scenarios never violate invariants. Seven combat invariants are proven exhaustively with 2,000-10,000 seeded battles per CI run.
+
+## Architecture
+
+The system is a pnpm workspace plus Turborepo monorepo with eight packages. The package boundaries are part of the product, not just the build.
+
+<DiagramWrapper caption="Package dependency graph and simulation data flow. Green: pure simulation core (deterministic, no I/O). Blue: client renderer and wire protocol. Gray: persistence. Orange: runtime infrastructure. Solid arrows: import dependencies. Dashed arrows: runtime data flow.">
+  <svg viewBox="0 0 800 520" xmlns="http://www.w3.org/2000/svg" className="w-full max-w-2xl text-(--color-text)">
+    <defs>
+      <marker id="arr" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L9,3 z" fill="currentColor" opacity="0.5" />
+      </marker>
+    </defs>
+
+    {/* Simulation Core (green) */}
+    <rect x="40" y="30" width="440" height="200" rx="8" fill="rgb(16 185 129 / 0.05)" stroke="rgb(16 185 129 / 0.4)" strokeWidth="1" strokeDasharray="4 4" />
+    <text x="60" y="54" fill="currentColor" fontSize="11" opacity="0.5" fontFamily="ui-monospace, monospace">PURE SIMULATION CORE</text>
+
+    <rect x="60" y="70" width="130" height="50" rx="6" fill="rgb(16 185 129 / 0.1)" stroke="rgb(16 185 129 / 0.6)" strokeWidth="1.5" />
+    <text x="125" y="92" textAnchor="middle" fill="currentColor" fontSize="12" fontWeight="600">shared-types</text>
+    <text x="125" y="108" textAnchor="middle" fill="currentColor" fontSize="10" opacity="0.6" fontFamily="ui-monospace, monospace">branded types</text>
+
+    <rect x="220" y="70" width="130" height="50" rx="6" fill="rgb(16 185 129 / 0.1)" stroke="rgb(16 185 129 / 0.6)" strokeWidth="1.5" />
+    <text x="285" y="92" textAnchor="middle" fill="currentColor" fontSize="12" fontWeight="600">game-data</text>
+    <text x="285" y="108" textAnchor="middle" fill="currentColor" fontSize="10" opacity="0.6" fontFamily="ui-monospace, monospace">FormulaSpec, balance</text>
+
+    <rect x="60" y="150" width="130" height="50" rx="6" fill="rgb(16 185 129 / 0.1)" stroke="rgb(16 185 129 / 0.6)" strokeWidth="1.5" />
+    <text x="125" y="172" textAnchor="middle" fill="currentColor" fontSize="12" fontWeight="600">game-engine</text>
+    <text x="125" y="188" textAnchor="middle" fill="currentColor" fontSize="10" opacity="0.6" fontFamily="ui-monospace, monospace">PRNG, int math, combat</text>
+
+    <rect x="220" y="150" width="130" height="50" rx="6" fill="rgb(16 185 129 / 0.1)" stroke="rgb(16 185 129 / 0.6)" strokeWidth="1.5" />
+    <text x="285" y="172" textAnchor="middle" fill="currentColor" fontSize="12" fontWeight="600">domains</text>
+    <text x="285" y="188" textAnchor="middle" fill="currentColor" fontSize="10" opacity="0.6" fontFamily="ui-monospace, monospace">economy, progression</text>
+
+    {/* Arrows within core */}
+    <line x1="190" y1="95" x2="218" y2="95" stroke="currentColor" strokeWidth="1" opacity="0.4" markerEnd="url(#arr)" />
+    <line x1="125" y1="120" x2="125" y2="148" stroke="currentColor" strokeWidth="1" opacity="0.4" markerEnd="url(#arr)" />
+    <line x1="190" y1="175" x2="218" y2="175" stroke="currentColor" strokeWidth="1" opacity="0.4" markerEnd="url(#arr)" />
+    <line x1="285" y1="120" x2="285" y2="148" stroke="currentColor" strokeWidth="1" opacity="0.4" markerEnd="url(#arr)" />
+
+    {/* Server (green/orange boundary) */}
+    <rect x="400" y="100" width="130" height="50" rx="6" fill="rgb(16 185 129 / 0.1)" stroke="rgb(249 115 22 / 0.6)" strokeWidth="1.5" />
+    <text x="465" y="122" textAnchor="middle" fill="currentColor" fontSize="12" fontWeight="600">server</text>
+    <text x="465" y="138" textAnchor="middle" fill="currentColor" fontSize="10" opacity="0.6" fontFamily="ui-monospace, monospace">tick scheduler, WS</text>
+
+    {/* db package */}
+    <rect x="400" y="170" width="130" height="40" rx="6" fill="rgb(107 114 128 / 0.1)" stroke="rgb(107 114 128 / 0.6)" strokeWidth="1.5" />
+    <text x="465" y="194" textAnchor="middle" fill="currentColor" fontSize="12" fontWeight="600">db</text>
+
+    <line x1="350" y1="175" x2="398" y2="125" stroke="currentColor" strokeWidth="1" opacity="0.4" markerEnd="url(#arr)" />
+    <line x1="465" y1="150" x2="465" y2="168" stroke="currentColor" strokeWidth="1" opacity="0.4" markerEnd="url(#arr)" />
+
+    {/* Client (blue) */}
+    <rect x="560" y="50" width="200" height="70" rx="8" fill="rgb(99 102 241 / 0.1)" stroke="rgb(99 102 241 / 0.6)" strokeWidth="1.5" />
+    <text x="660" y="78" textAnchor="middle" fill="currentColor" fontSize="12" fontWeight="600">client (React + Zustand)</text>
+    <text x="660" y="96" textAnchor="middle" fill="currentColor" fontSize="10" opacity="0.6" fontFamily="ui-monospace, monospace">renders deltas, cannot compute</text>
+
+    {/* Protocol bridge */}
+    <rect x="560" y="150" width="200" height="40" rx="6" fill="rgb(99 102 241 / 0.05)" stroke="rgb(99 102 241 / 0.4)" strokeWidth="1" />
+    <text x="660" y="174" textAnchor="middle" fill="currentColor" fontSize="11" opacity="0.7" fontFamily="ui-monospace, monospace">protocol (Zod wire schemas)</text>
+
+    {/* WS delta arrow (dashed = runtime) */}
+    <line x1="530" y1="125" x2="558" y2="85" stroke="currentColor" strokeWidth="1.5" opacity="0.4" markerEnd="url(#arr)" strokeDasharray="4 4" />
+    <text x="540" y="95" fill="currentColor" fontSize="9" opacity="0.5" fontFamily="ui-monospace, monospace">WS deltas</text>
+
+    {/* Protocol arrows */}
+    <line x1="530" y1="125" x2="558" y2="165" stroke="currentColor" strokeWidth="1" opacity="0.3" markerEnd="url(#arr)" />
+    <line x1="660" y1="120" x2="660" y2="148" stroke="currentColor" strokeWidth="1" opacity="0.3" markerEnd="url(#arr)" />
+
+    {/* Storage (gray) */}
+    <rect x="250" y="280" width="310" height="70" rx="8" fill="rgb(107 114 128 / 0.1)" stroke="rgb(107 114 128 / 0.6)" strokeWidth="1.5" />
+    <text x="405" y="308" textAnchor="middle" fill="currentColor" fontSize="12" fontWeight="600">Postgres (Neon)</text>
+    <text x="405" y="328" textAnchor="middle" fill="currentColor" fontSize="10" opacity="0.6" fontFamily="ui-monospace, monospace">Drizzle ORM, dirty-flag persistence, snapshots</text>
+
+    <line x1="465" y1="210" x2="430" y2="278" stroke="currentColor" strokeWidth="1" opacity="0.4" markerEnd="url(#arr)" strokeDasharray="4 4" />
+
+    {/* External (orange) */}
+    <rect x="40" y="390" width="720" height="110" rx="8" fill="rgb(249 115 22 / 0.05)" stroke="rgb(249 115 22 / 0.4)" strokeWidth="1" strokeDasharray="4 4" />
+    <text x="60" y="414" fill="currentColor" fontSize="11" opacity="0.5" fontFamily="ui-monospace, monospace">INFRASTRUCTURE</text>
+
+    <text x="100" y="450" fill="currentColor" fontSize="11" opacity="0.7" fontFamily="ui-monospace, monospace">Railway</text>
+    <text x="100" y="468" fill="currentColor" fontSize="11" opacity="0.7" fontFamily="ui-monospace, monospace">(server runtime)</text>
+
+    <text x="280" y="450" fill="currentColor" fontSize="11" opacity="0.7" fontFamily="ui-monospace, monospace">Redis</text>
+    <text x="280" y="468" fill="currentColor" fontSize="11" opacity="0.7" fontFamily="ui-monospace, monospace">(runtime state)</text>
+
+    <text x="440" y="450" fill="currentColor" fontSize="11" opacity="0.7" fontFamily="ui-monospace, monospace">Vercel</text>
+    <text x="440" y="468" fill="currentColor" fontSize="11" opacity="0.7" fontFamily="ui-monospace, monospace">(client SPA)</text>
+
+    <text x="600" y="450" fill="currentColor" fontSize="11" opacity="0.7" fontFamily="ui-monospace, monospace">GitHub Actions</text>
+    <text x="600" y="468" fill="currentColor" fontSize="11" opacity="0.7" fontFamily="ui-monospace, monospace">(CI: Node 20 + 22)</text>
+
+  </svg>
+</DiagramWrapper>
+
+The load-bearing architectural constraint is that the client cannot see game-engine, game-data, domains, db, or server. Not even types. This is enforced by ESLint rules and a structural test that grep-fails the build on illegal imports. The client is a renderer that displays what the server sent. It is structurally incapable of computing gameplay state.
+
+The simulation pipeline for a single action: client sends a validated message via WebSocket. The server derives a seed deterministically from context, constructs a Mulberry32 RNG closure, looks up frozen balance data, calls the pure engine, translates outcomes through the domain layer, persists dirty state, and publishes deltas. Every step after seed derivation is pure.
+
+## Engineering Challenges
+
+### Rebuilding the architecture after the v1 post-mortem
+
+The v1 system had 27 overlapping services and four separate `setInterval` loops. Combat was nondeterministic because state mutations came from all four loops at varying cadences. You cannot patch your way out of that — every fix creates a new ordering assumption the next fix breaks. The solution was a unified tick scheduler with bucket scheduling and in-memory-first state, replacing fragmented ownership with one scheduler that owns timing and one state manager that owns truth.
+
+### Discovering a hidden contract defect in combat itself
+
+The stat model had `power` and `defense` fields on every combatant. Guild buffs modified those stats. Archetype progression increased them. The UI displayed them. But the combat formulas were reading `level`, not `power` or `defense`, when evaluating damage and mitigation. Three guild buffs were mechanically inert. All archetypes at the same level dealt identical damage regardless of their power stat.
+
+Every test passed. The schemas were valid. The buffs looked correctly wired in data. But behavior was semantically false — the named model and the runtime behavior had silently drifted. Normal TDD does not force you to ask "does this stat actually do what its name implies?"
+
+Fixing it required bounded calibration, an evidence harness run across all archetype-tier combinations, guardian HP recalibration for two tiers, and an ADR amendment. The diff was twenty lines. The verification was a week.
+
+### Squeezing deterministic correctness out of a 100,000-turn battle loop
+
+The naive battle loop spreads the previous turn's action log into a new array on every turn. For a battle that runs to the stalemate limit, that is O(n^2) array copies. Property tests caught this as a timeout on high-HP, low-damage combatants — a scenario no hand-written test was going to generate.
+
+The fix: split the immutability contract between layers. The turn boundary stays immutable. The battle boundary stays immutable. The inner-loop accumulator is a mutable local, invisible to any external observer. The optimization preserved determinism and external immutability while eliminating allocation pressure in the hot path.
+
+<Callout variant="insight">
+  Immutability is a property of the observable interface, not of every
+  intermediate local. If no one outside the function can tell the difference,
+  you optimized it. If they can, you broke it.
+</Callout>
+
+### Making balance tuning evidence-driven
+
+Most games tune balance by playing the build and adjusting. That produces balance tuned for the designer's play style, and it does not scale. The evidence harness runs 300 deterministic simulations per scenario, computes metrics against target bands, and produces before/after tables with formal dispositions: Tuned, Accepted, or Deferred. "I think it's fine now" is not an option.
+
+## Decisions & Tradeoffs
+
+### 1. Mulberry32 over statistically stronger PRNGs
+
+Alternatives: xoshiro128\*\*, PCG32. Mulberry32 is marginally weaker than either, but its entire state update uses only operations I trust to be bit-identical across V8 versions: `Math.imul`, bitwise shift, bitwise OR. For a combat RNG drawing a few thousand numbers per battle, statistical strength is not the bottleneck. Reproducibility and auditability are.
+
+Eight lines. The entire trust boundary is visible at a glance:
+
+```typescript
+export const createSeededRng = (seed: number): Rng => {
+  let s = seed | 0
+  return (): number => {
+    s = (s + 0x6d2b79f5) | 0
+    let t = Math.imul(s ^ (s >>> 15), 1 | s)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+```
+
+The cross-platform proof is one FNV-1a hash over 10,000 draws from seed 42, pinned as a constant in CI. If a single bit of any draw changes on any platform, the hash changes and CI fails. One test, one constant, total confidence across the runtime matrix.
+
+### 2. Integer-scaled math at COMBAT_SCALE=10,000 over arbitrary-precision Decimal
+
+Alternatives: plain JS number with epsilon handling, big.js Decimal everywhere, BigInt. I chose scaled int32 because integers behave the same everywhere and four decimal places of headroom covers every combat multiplier in the design.
+
+The specific failure: `Math.pow(1.4, 3)` in IEEE 754 doubles is `13719.999999999996`, not `13720`. That one-damage difference at a tier threshold changes whether an encounter is beatable at level 10 or level 11. Integer scaling eliminates the entire class:
+
+```typescript
+export const COMBAT_SCALE = 10_000
+
+export const scaledMultiply = (base: number, scaledMult: number): number =>
+  Math.floor((base * scaledMult) / COMBAT_SCALE)
+```
+
+Floor-truncation uniformly. Increasing any input never decreases the output. No rounding flips at boundaries.
+
+**Tradeoff:** developers must use helpers instead of writing `a * b`. Overflow caps at ~214K per value — fine for combat, but exactly why economy math is migrating separately to `break_eternity.js`.
+
+### 3. FormulaSpec data over hardcoded balance code
+
+Alternatives: engine-embedded calculations, sprawling JSON with no type system, custom DSL. I chose a four-kind discriminated union with a closed variable set and structural validation:
+
+```typescript
+type FormulaSpec =
+  | { kind: 'CONSTANT'; value: number; rounding: RoundingMode }
+  | {
+      kind: 'AFFINE'
+      slope: number
+      intercept: number
+      variable: FormulaVar
+      rounding: RoundingMode
+    }
+  | {
+      kind: 'POWER_LAW'
+      base: number
+      multiplier: number
+      exponentVar: FormulaVar
+      rounding: RoundingMode
+    }
+  | { kind: 'LINEAR_RANGE'; min: number; max: number; rounding: RoundingMode }
+```
+
+The rebalance that moved median runs-to-level-5 from 221 to 7 changed six constants across four files. Zero engine code touched. Zero domain code touched. 1,100+ existing test assertions still passed unchanged, because the engine does not care what the formula is — only that it is well-typed.
+
+### 4. Server-authoritative with a structurally blind client
+
+Alternatives: client-predicted state with reconciliation, lockstep simulation with input forwarding. I chose full server authority because a client that cannot compute state cannot forge state. The tradeoff is visible latency on gameplay actions — no optimistic UI — but correctness outranks perceived responsiveness for a system where outcome integrity is the product.
+
+### 5. Property-based proofs over example-only testing
+
+Alternatives: example tests and manual smoke passes. For stochastic systems, examples prove known scenarios while properties prove classes of scenarios. The stat reconciliation shipped without broken guardian discrimination specifically because property tests covered seed/archetype/level combinations no hand-written test happened to try. The accepted cost is heavier test architecture and measurable CI time per run.
+
+## Outcome
+
+**2,250+ tests** across 255 files. Seven property-based combat invariants running 2,000-10,000 seeded battles each — roughly 40,000 deterministic battles per CI run just in the invariant layer. Thirteen structural guards enforce architectural rules at build time.
+
+Cross-platform determinism verified by PRNG fingerprint (`0xa82c617d`, FNV-1a-32 over 10K uint32 draws from seed 42), locked in CI across Node 20 and Node 22.
+
+The EP21 rebalance evidence: median runs-to-level-5 moved from 221 to 7. Runs-to-level-10 from 1,153 to 23. Six constants changed. Zero code changed.
+
+The combat stat reconciliation: guild buffs and archetype power became mechanically effective. WAR_BANNER at guild level 2 now contributes +7 damage per turn. At guild level 10, +20 per turn. Previously: zero. The fix was twenty lines of FormulaSpec changes plus a week of evidence work.
+
+The proof I care about is not a throughput headline. I can change the combat formula contract, re-validate against 40,000 property-test battles, recalibrate the content layer against 300 deterministic simulations per scenario, close the change with an ADR amendment and a gate signoff, and ship to production with zero rollback. That is the engineering discipline this system was built to enable.
+
+The number I do not have: a clean throughput benchmark. The property test suite runs 40,000 battles in a few minutes of CI time, but I have not profiled on a dedicated benchmark and I would rather omit the number than publish one that is not measured cleanly. That is the same discipline that shaped the rest of the engine.
+
+## Reflection
+
+Deterministic simulation teaches you that most of the bugs you tolerate in typical web software are actually bugs — you just cannot see them because the output is forgiving.
+
+In a typical CRUD application, a float rounding difference disappears into rendered HTML. A handler that calls `Date.now()` is fine because nobody replays CRUD requests. The forgiveness of the output format hides an enormous amount of sloppiness. In a deterministic engine, the output is unforgiving. One stray `Math.random()` inside pure code and your property tests become flaky. One `Math.pow(1.4, 3)` and your damage values are off by one. One ambiguous state owner and two subsystems fight over the truth.
+
+The principle I take from this into every system I build: make the important truths explicit early, and prove them structurally instead of hoping for them. If randomness matters, own it as a dependency. If arithmetic precision matters, define the rules at one boundary. If layer boundaries matter, enforce them with tests that fail the build. If a system can fail silently, build the evidence path before you need it.
+
+That principle applies to governed AI pipelines, business platforms, and financial systems just as much as it applies to game engines. Karinth is not special because it is a game. It is a small, dense example of engineering discipline applied to a problem where the discipline is mechanically necessary — and a set of patterns portable to any system where correctness matters more than the forgiving defaults of HTTP.
+
+<Quote>
+  The techniques are not game-specific — seeded PRNG, integer-scaled math,
+  explicit impurity boundaries, immutable state, property-based invariants,
+  data-driven business rules. They are software engineering techniques. Games
+  just make the consequences of ignoring them impossible to hide.
+</Quote>
+
+<RelatedContent
+  items={[
+    {
+      path: '/writing/using-ai-in-real-products',
+      title: 'Using AI in Real Products, Not Just Demos',
+      type: 'article',
+    },
+    {
+      path: '/work/chimera',
+      title:
+        'Project Chimera — Building an Editorial System Where Every Sentence Is Accountable',
+      type: 'case-study',
+    },
+    {
+      path: '/how-i-build',
+      title: 'How I Build',
+      type: 'article',
+    },
+  ]}
+/>
