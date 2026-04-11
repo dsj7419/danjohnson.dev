@@ -6,15 +6,15 @@
 
 ## Completion Summary (updated 2026-04-11, end of day)
 
-| Epic                     | Status            | Notes                                                                                                |
-| ------------------------ | ----------------- | ---------------------------------------------------------------------------------------------------- |
-| Epic 0: Foundation       | **COMPLETE**      | Next.js 16.2.3, TS strict, Tailwind v4, Vitest, CI, Vercel. MDX-in-repo chosen.                      |
-| Epic 1: Design System    | **COMPLETE**      | 8 primitives, 15 blocks, 3 fonts, oklch tokens, dark mode, fluid type, technical artifact system.    |
-| Epic 2: Content          | **COMPLETE**      | 4 case studies published. 2 articles. All pages written with cross-links.                            |
-| Epic 3: Core Pages       | **COMPLETE**      | All routes, listings, layout shell, static pages, 404. Homepage caps at 3 featured.                  |
-| Epic 4: Inquiry System   | **COMPLETE**      | Contact form live via API route + Resend. Confirmation email to submitter. Honeypot + rate limiting. |
-| Epic 5: Launch Readiness | **NEAR-COMPLETE** | Lighthouse verified. Technical artifacts elevated. Contact form live. **Domain cutover remaining.**  |
-| Epic 6: Post-Launch      | NOT STARTED       | Future features tracked separately.                                                                  |
+| Epic                     | Status       | Notes                                                                                                |
+| ------------------------ | ------------ | ---------------------------------------------------------------------------------------------------- |
+| Epic 0: Foundation       | **COMPLETE** | Next.js 16.2.3, TS strict, Tailwind v4, Vitest, CI, Vercel. MDX-in-repo chosen.                      |
+| Epic 1: Design System    | **COMPLETE** | 8 primitives, 15 blocks, 3 fonts, oklch tokens, dark mode, fluid type, technical artifact system.    |
+| Epic 2: Content          | **COMPLETE** | 4 case studies published. 2 articles. All pages written with cross-links.                            |
+| Epic 3: Core Pages       | **COMPLETE** | All routes, listings, layout shell, static pages, 404. Homepage caps at 3 featured.                  |
+| Epic 4: Inquiry System   | **COMPLETE** | Contact form live via API route + Resend. Confirmation email to submitter. Honeypot + rate limiting. |
+| Epic 5: Launch Readiness | **COMPLETE** | Lighthouse verified. Domain live. All pages verified. Contact form live. Security headers confirmed. |
+| Epic 6: Post-Launch      | NOT STARTED  | Future features tracked separately.                                                                  |
 
 **Current commit:** `2432f5a` | **Tests:** 283 passing | **Vulnerabilities:** 0 | **Client components:** 5
 
@@ -272,8 +272,8 @@ All pages written with concrete project references and cross-links.
 ### 5.3 Mobile Pass
 
 - [x] Navigation works on mobile (hamburger, Escape dismiss, focus management)
-- [ ] All pages verified on mobile breakpoints — **PENDING VERIFICATION**
-- [ ] Touch targets verified — **PENDING VERIFICATION**
+- [x] All pages verified on mobile breakpoints (375px viewport, Chrome MCP, Apr 11)
+- [x] Touch targets verified (form inputs py-3, buttons py-3, nav links full-width)
 
 ### 5.4 SEO & Metadata ✓
 
@@ -287,11 +287,11 @@ All pages written with concrete project references and cross-links.
 
 ### 5.5 Final Checklist
 
-- [ ] Domain configured and DNS propagated (currently on danjohnson-dev.vercel.app)
+- [x] Domain configured and DNS propagated (danjohnson.dev live, Apr 11)
 - [x] SSL/HTTPS verified (Vercel handles)
 - [ ] Error monitoring active (Sentry) — deferred
 - [ ] Analytics active (Plausible) — deferred
-- [ ] All internal links tested — **PENDING VERIFICATION**
+- [x] All 13 pages return 200, 404 returns 404. Zero broken mailto references. (Apr 11)
 - [x] 404 page works
 - [x] Favicon and app icons (icon.svg)
 - [x] Security headers: A grade posture (HSTS, CSP, X-Frame-Options, etc.)
@@ -305,7 +305,7 @@ All pages written with concrete project references and cross-links.
 - [ ] Custom domain cutover
 - [ ] Go live publicly
 
-**Remaining:** Internal link audit, mobile breakpoint verification, domain cutover to danjohnson.dev.
+**Remaining:** Screen reader manual verification. Sentry + Plausible deferred to post-launch.
 
 ---
 
@@ -368,4 +368,4 @@ The platform is ready to launch when:
 5. The inquiry form filters out low-quality leads before you ever see them — **MET** (contact form live, description field is the filter)
 6. Lighthouse scores are 95+ across the board — **MET** (Desktop 93-100 all pages, A11y 100, BP 100, SEO 100)
 7. The site loads fast, works on mobile, and supports dark mode — **MET** (static-first, 3 client components, dark mode complete)
-8. You would confidently hand this URL to anyone you want to work with — **PENDING** (after domain cutover)
+8. You would confidently hand this URL to anyone you want to work with — **MET** (danjohnson.dev live, all systems operational)
