@@ -1,19 +1,27 @@
 import type { ReactNode } from 'react'
 
 type DiagramWrapperProps = {
+  title?: string
   caption?: string
   className?: string
   children: ReactNode
 }
 
-export function DiagramWrapper({ caption, className = '', children }: DiagramWrapperProps) {
+export function DiagramWrapper({ title, caption, className = '', children }: DiagramWrapperProps) {
   return (
     <figure
-      className={`overflow-x-auto rounded-lg border border-(--color-border) bg-(--color-bg-elevated) p-6 ${className}`.trim()}
+      className={`my-6 overflow-x-auto rounded-lg border border-(--color-border) ${className}`.trim()}
     >
-      <div className="flex items-center justify-center">{children}</div>
+      {title && (
+        <div className="border-b border-(--color-border) bg-(--color-bg-alt) px-4 py-2">
+          <span className="font-mono text-xs text-(--color-text-muted)">{title}</span>
+        </div>
+      )}
+      <div className="flex items-center justify-center bg-(--color-bg-elevated) p-6">
+        {children}
+      </div>
       {caption && (
-        <figcaption className="mt-4 text-center text-sm text-(--color-text-muted)">
+        <figcaption className="border-t border-(--color-border) px-4 py-3 text-center text-sm text-(--color-text-muted)">
           {caption}
         </figcaption>
       )}

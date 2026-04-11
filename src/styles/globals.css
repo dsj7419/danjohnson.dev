@@ -113,6 +113,51 @@
   background-color: var(--color-accent-950);
 }
 
+/* Technical artifact: code block title bar (file name tab) */
+[data-rehype-pretty-code-title] {
+  background-color: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  border-bottom: none;
+  border-radius: 0.5rem 0.5rem 0 0;
+  padding: 0.5rem 1rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+[data-rehype-pretty-code-title] + pre {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+/* Line numbers via CSS counter — desktop only */
+[data-rehype-pretty-code-figure] code {
+  counter-reset: line;
+}
+
+@media (min-width: 768px) {
+  [data-rehype-pretty-code-figure] [data-line]::before {
+    counter-increment: line;
+    content: counter(line);
+    display: inline-block;
+    width: 2ch;
+    margin-right: 1rem;
+    text-align: right;
+    color: var(--color-text-faint);
+    font-size: inherit;
+    user-select: none;
+  }
+}
+
+/* A11y: override github-light tokens that fail WCAG AA (4.5:1) on code-bg */
+[data-rehype-pretty-code-figure] code span[style*='--shiki-light:#D73A49'] {
+  --shiki-light: #c42d3e !important;
+}
+
+[data-rehype-pretty-code-figure] code span[style*='--shiki-light:#E36209'] {
+  --shiki-light: #a84207 !important;
+}
+
 @layer base {
   html {
     color-scheme: light dark;

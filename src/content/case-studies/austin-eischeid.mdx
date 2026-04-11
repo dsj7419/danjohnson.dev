@@ -101,14 +101,14 @@ No unnecessary animation, no visual noise, no trend-driven UI decisions. The wor
 
 The platform is a static-first Next.js application backed by Sanity as the structured content layer. Pages are statically generated at build time, served from Vercel's edge, and hydrated only where interactivity is required.
 
-<DiagramWrapper caption="Request and content flow: visitors hit Vercel's edge cache, which serves pre-rendered Next.js pages built from Sanity content at deploy time.">
+<DiagramWrapper title="Request & Content Flow" caption="Request and content flow: visitors hit Vercel's edge cache, which serves pre-rendered Next.js pages built from Sanity content at deploy time.">
   <svg
     viewBox="0 0 800 460"
     xmlns="http://www.w3.org/2000/svg"
     className="w-full max-w-2xl text-(--color-text)"
   >
     <defs>
-      <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <marker id="diagram-arrow-austin" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
         <path d="M0,0 L0,6 L9,3 z" fill="currentColor" opacity="0.5" />
       </marker>
     </defs>
@@ -118,14 +118,14 @@ The platform is a static-first Next.js application backed by Sanity as the struc
     <text x="110" y="88" textAnchor="middle" fill="currentColor" fontSize="14" fontWeight="600">Visitor</text>
     <text x="110" y="106" textAnchor="middle" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">browser</text>
 
-    <line x1="180" y1="90" x2="220" y2="90" stroke="currentColor" strokeWidth="1.5" opacity="0.5" markerEnd="url(#arrowhead)" />
+    <line x1="180" y1="90" x2="220" y2="90" stroke="currentColor" strokeWidth="1.5" opacity="0.5" markerEnd="url(#diagram-arrow-austin)" />
 
     {/* Vercel Edge — frontend (blue) */}
     <rect x="225" y="60" width="170" height="60" rx="8" fill="rgb(99 102 241 / 0.1)" stroke="rgb(99 102 241 / 0.6)" strokeWidth="1.5" />
     <text x="310" y="88" textAnchor="middle" fill="currentColor" fontSize="14" fontWeight="600">Vercel Edge</text>
     <text x="310" y="106" textAnchor="middle" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">CDN, image opt</text>
 
-    <line x1="395" y1="90" x2="435" y2="90" stroke="currentColor" strokeWidth="1.5" opacity="0.5" markerEnd="url(#arrowhead)" />
+    <line x1="395" y1="90" x2="435" y2="90" stroke="currentColor" strokeWidth="1.5" opacity="0.5" markerEnd="url(#diagram-arrow-austin)" />
 
     {/* Next.js — frontend (blue) */}
     <rect x="440" y="60" width="200" height="60" rx="8" fill="rgb(99 102 241 / 0.1)" stroke="rgb(99 102 241 / 0.6)" strokeWidth="1.5" />
@@ -133,7 +133,7 @@ The platform is a static-first Next.js application backed by Sanity as the struc
     <text x="540" y="106" textAnchor="middle" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">static + RSC</text>
 
     {/* Build-time arrow down */}
-    <line x1="540" y1="120" x2="540" y2="195" stroke="currentColor" strokeWidth="1.5" opacity="0.5" markerEnd="url(#arrowhead)" strokeDasharray="4 4" />
+    <line x1="540" y1="120" x2="540" y2="195" stroke="currentColor" strokeWidth="1.5" opacity="0.5" markerEnd="url(#diagram-arrow-austin)" strokeDasharray="4 4" />
     <text x="555" y="162" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">build-time fetch</text>
 
     {/* Sanity — service (green) */}
@@ -141,7 +141,7 @@ The platform is a static-first Next.js application backed by Sanity as the struc
     <text x="540" y="228" textAnchor="middle" fill="currentColor" fontSize="14" fontWeight="600">Sanity CMS</text>
     <text x="540" y="246" textAnchor="middle" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">structured content + GROQ</text>
 
-    <line x1="540" y1="260" x2="540" y2="305" stroke="currentColor" strokeWidth="1.5" opacity="0.5" markerEnd="url(#arrowhead)" />
+    <line x1="540" y1="260" x2="540" y2="305" stroke="currentColor" strokeWidth="1.5" opacity="0.5" markerEnd="url(#diagram-arrow-austin)" />
 
     {/* Content types — storage (gray) */}
     <rect x="270" y="310" width="540" height="140" rx="8" fill="rgb(107 114 128 / 0.1)" stroke="rgb(107 114 128 / 0.6)" strokeWidth="1.5" />

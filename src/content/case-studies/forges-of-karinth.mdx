@@ -93,10 +93,10 @@ Five principles emerged from the problem framing.
 
 The system is a pnpm workspace plus Turborepo monorepo with eight packages. The package boundaries are part of the product, not just the build.
 
-<DiagramWrapper caption="Package dependency graph and simulation data flow. Green: pure simulation core (deterministic, no I/O). Blue: client renderer and wire protocol. Gray: persistence. Orange: runtime infrastructure. Solid arrows: import dependencies. Dashed arrows: runtime data flow.">
+<DiagramWrapper title="Package Dependency Graph" caption="Package dependency graph and simulation data flow. Green: pure simulation core (deterministic, no I/O). Blue: client renderer and wire protocol. Gray: persistence. Orange: runtime infrastructure. Solid arrows: import dependencies. Dashed arrows: runtime data flow.">
   <svg viewBox="0 0 800 520" xmlns="http://www.w3.org/2000/svg" className="w-full max-w-2xl text-(--color-text)">
     <defs>
-      <marker id="arr" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <marker id="diagram-arrow-karinth" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
         <path d="M0,0 L0,6 L9,3 z" fill="currentColor" opacity="0.5" />
       </marker>
     </defs>
@@ -122,10 +122,10 @@ The system is a pnpm workspace plus Turborepo monorepo with eight packages. The 
     <text x="285" y="188" textAnchor="middle" fill="currentColor" fontSize="10" opacity="0.6" fontFamily="ui-monospace, monospace">economy, progression</text>
 
     {/* Arrows within core */}
-    <line x1="190" y1="95" x2="218" y2="95" stroke="currentColor" strokeWidth="1" opacity="0.4" markerEnd="url(#arr)" />
-    <line x1="125" y1="120" x2="125" y2="148" stroke="currentColor" strokeWidth="1" opacity="0.4" markerEnd="url(#arr)" />
-    <line x1="190" y1="175" x2="218" y2="175" stroke="currentColor" strokeWidth="1" opacity="0.4" markerEnd="url(#arr)" />
-    <line x1="285" y1="120" x2="285" y2="148" stroke="currentColor" strokeWidth="1" opacity="0.4" markerEnd="url(#arr)" />
+    <line x1="190" y1="95" x2="218" y2="95" stroke="currentColor" strokeWidth="1" opacity="0.4" markerEnd="url(#diagram-arrow-karinth)" />
+    <line x1="125" y1="120" x2="125" y2="148" stroke="currentColor" strokeWidth="1" opacity="0.4" markerEnd="url(#diagram-arrow-karinth)" />
+    <line x1="190" y1="175" x2="218" y2="175" stroke="currentColor" strokeWidth="1" opacity="0.4" markerEnd="url(#diagram-arrow-karinth)" />
+    <line x1="285" y1="120" x2="285" y2="148" stroke="currentColor" strokeWidth="1" opacity="0.4" markerEnd="url(#diagram-arrow-karinth)" />
 
     {/* Server (green/orange boundary) */}
     <rect x="400" y="100" width="130" height="50" rx="6" fill="rgb(16 185 129 / 0.1)" stroke="rgb(249 115 22 / 0.6)" strokeWidth="1.5" />
@@ -136,8 +136,8 @@ The system is a pnpm workspace plus Turborepo monorepo with eight packages. The 
     <rect x="400" y="170" width="130" height="40" rx="6" fill="rgb(107 114 128 / 0.1)" stroke="rgb(107 114 128 / 0.6)" strokeWidth="1.5" />
     <text x="465" y="194" textAnchor="middle" fill="currentColor" fontSize="12" fontWeight="600">db</text>
 
-    <line x1="350" y1="175" x2="398" y2="125" stroke="currentColor" strokeWidth="1" opacity="0.4" markerEnd="url(#arr)" />
-    <line x1="465" y1="150" x2="465" y2="168" stroke="currentColor" strokeWidth="1" opacity="0.4" markerEnd="url(#arr)" />
+    <line x1="350" y1="175" x2="398" y2="125" stroke="currentColor" strokeWidth="1" opacity="0.4" markerEnd="url(#diagram-arrow-karinth)" />
+    <line x1="465" y1="150" x2="465" y2="168" stroke="currentColor" strokeWidth="1" opacity="0.4" markerEnd="url(#diagram-arrow-karinth)" />
 
     {/* Client (blue) */}
     <rect x="560" y="50" width="200" height="70" rx="8" fill="rgb(99 102 241 / 0.1)" stroke="rgb(99 102 241 / 0.6)" strokeWidth="1.5" />
@@ -149,19 +149,19 @@ The system is a pnpm workspace plus Turborepo monorepo with eight packages. The 
     <text x="660" y="174" textAnchor="middle" fill="currentColor" fontSize="11" opacity="0.7" fontFamily="ui-monospace, monospace">protocol (Zod wire schemas)</text>
 
     {/* WS delta arrow (dashed = runtime) */}
-    <line x1="530" y1="125" x2="558" y2="85" stroke="currentColor" strokeWidth="1.5" opacity="0.4" markerEnd="url(#arr)" strokeDasharray="4 4" />
+    <line x1="530" y1="125" x2="558" y2="85" stroke="currentColor" strokeWidth="1.5" opacity="0.4" markerEnd="url(#diagram-arrow-karinth)" strokeDasharray="4 4" />
     <text x="540" y="95" fill="currentColor" fontSize="9" opacity="0.5" fontFamily="ui-monospace, monospace">WS deltas</text>
 
     {/* Protocol arrows */}
-    <line x1="530" y1="125" x2="558" y2="165" stroke="currentColor" strokeWidth="1" opacity="0.3" markerEnd="url(#arr)" />
-    <line x1="660" y1="120" x2="660" y2="148" stroke="currentColor" strokeWidth="1" opacity="0.3" markerEnd="url(#arr)" />
+    <line x1="530" y1="125" x2="558" y2="165" stroke="currentColor" strokeWidth="1" opacity="0.3" markerEnd="url(#diagram-arrow-karinth)" />
+    <line x1="660" y1="120" x2="660" y2="148" stroke="currentColor" strokeWidth="1" opacity="0.3" markerEnd="url(#diagram-arrow-karinth)" />
 
     {/* Storage (gray) */}
     <rect x="250" y="280" width="310" height="70" rx="8" fill="rgb(107 114 128 / 0.1)" stroke="rgb(107 114 128 / 0.6)" strokeWidth="1.5" />
     <text x="405" y="308" textAnchor="middle" fill="currentColor" fontSize="12" fontWeight="600">Postgres (Neon)</text>
     <text x="405" y="328" textAnchor="middle" fill="currentColor" fontSize="10" opacity="0.6" fontFamily="ui-monospace, monospace">Drizzle ORM, dirty-flag persistence, snapshots</text>
 
-    <line x1="465" y1="210" x2="430" y2="278" stroke="currentColor" strokeWidth="1" opacity="0.4" markerEnd="url(#arr)" strokeDasharray="4 4" />
+    <line x1="465" y1="210" x2="430" y2="278" stroke="currentColor" strokeWidth="1" opacity="0.4" markerEnd="url(#diagram-arrow-karinth)" strokeDasharray="4 4" />
 
     {/* External (orange) */}
     <rect x="40" y="390" width="720" height="110" rx="8" fill="rgb(249 115 22 / 0.05)" stroke="rgb(249 115 22 / 0.4)" strokeWidth="1" strokeDasharray="4 4" />
