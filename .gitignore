@@ -46,5 +46,6 @@ Thumbs.db
 # archive (original planning docs, not shipped)
 docs/archive/
 
-# AI session context (regenerable via /discover)
+# Claude Code — local/personal, machine-specific (shared config lives in .claude/settings.json)
 .claude/SESSION_CONTEXT.md
+.claude/settings.local.json
