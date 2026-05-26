@@ -45,3 +45,6 @@ Thumbs.db
 
 # archive (original planning docs, not shipped)
 docs/archive/
+
+# AI session context (regenerable via /discover)
+.claude/SESSION_CONTEXT.md
