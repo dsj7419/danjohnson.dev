@@ -49,3 +49,12 @@ docs/archive/
 # Claude Code — local/personal, machine-specific (shared config lives in .claude/settings.json)
 .claude/SESSION_CONTEXT.md
 .claude/settings.local.json
+
+# forensics analysis artifacts (regenerable)
+.forensics/
+
+# Playwright MCP session artifacts
+.playwright-mcp/
+
+# forensics report (regenerable from .forensics/; keep out of a possibly-public repo)
+FORENSICS_REPORT.md
