@@ -27,6 +27,13 @@ export function Footer() {
           >
             RSS
           </Link>
+          <Link
+            href="/privacy"
+            className="text-sm text-(--color-text-muted) transition-colors hover:text-(--color-text)"
+            style={{ transitionDuration: 'var(--duration-fast)' }}
+          >
+            Privacy
+          </Link>
         </nav>
       </div>
     </footer>

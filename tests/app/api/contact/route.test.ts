@@ -258,6 +258,17 @@ describe('POST /api/contact', () => {
       expect(mockSend).toHaveBeenCalledTimes(10)
     })
 
+    it('logs a short hash of the client IP, never the address itself', async () => {
+      for (let i = 0; i < 6; i++) {
+        await post({ headers: { 'x-forwarded-for': '203.0.113.9' } })
+      }
+
+      expect(console.warn).toHaveBeenCalledWith(
+        expect.stringMatching(/Rate limited IP hash: [0-9a-f]{12}$/),
+      )
+      expect(console.warn).not.toHaveBeenCalledWith(expect.stringContaining('203.0.113.9'))
+    })
+
     it('keys the limit on the first hop of x-forwarded-for', async () => {
       for (let i = 0; i < 5; i++) {
         await post({ headers: { 'x-forwarded-for': '9.9.9.9, 10.0.0.1' } })

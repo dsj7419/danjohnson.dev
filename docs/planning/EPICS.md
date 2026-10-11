@@ -239,7 +239,7 @@ All pages written with concrete project references and cross-links.
 - [x] Confirmation to submitter: `Dan Johnson <dan@danjohnson.dev>` with message copy
 - [x] Honeypot spam protection (silent fake success)
 - [x] In-memory rate limiting (5/IP/hour, best-effort for V1)
-- [x] Operational logging (no PII)
+- [x] Operational logging (IP on rate-limit rejections only, as a 12-character hash; disclosed on /privacy)
 - [x] Environment variable gate (graceful error if Resend not configured)
 - [x] `CONTACT_EMAIL` delivers directly to Gmail (bypasses Porkbun forwarding)
 

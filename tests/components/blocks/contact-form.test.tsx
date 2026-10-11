@@ -2,7 +2,24 @@ import { render, screen } from '@testing-library/react'
 
 import { ContactForm } from '@/components/blocks/contact-form'
 
+vi.mock('next/link', () => ({
+  default: ({ children, href, ...props }: { children: React.ReactNode; href: string }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
+}))
+
 describe('ContactForm', () => {
+  it('tells the submitter where the message goes and links to the privacy page', () => {
+    render(<ContactForm />)
+    expect(screen.getByText(/goes straight to my inbox/i)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /how i handle what you send/i })).toHaveAttribute(
+      'href',
+      '/privacy',
+    )
+  })
+
   it('renders all form fields', () => {
     render(<ContactForm />)
     expect(screen.getByLabelText(/name/i)).toBeInTheDocument()

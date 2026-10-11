@@ -36,6 +36,12 @@ describe('Footer', () => {
     expect(link.closest('a')).toHaveAttribute('href', '/writing/feed.xml')
   })
 
+  it('renders a Privacy link', () => {
+    render(<Footer />)
+    const link = screen.getByText('Privacy')
+    expect(link.closest('a')).toHaveAttribute('href', '/privacy')
+  })
+
   it('renders as footer element', () => {
     const { container } = render(<Footer />)
     expect(container.querySelector('footer')).toBeInTheDocument()

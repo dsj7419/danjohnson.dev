@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useCallback, useRef, useState } from 'react'
 
 type FormState = {
@@ -211,6 +212,17 @@ export function ContactForm({ className = '' }: { className?: string }) {
           >
             {pending ? 'Sending...' : 'Send message'}
           </button>
+          <p className="mt-3 text-xs text-(--color-text-muted)">
+            This goes straight to my inbox.{' '}
+            <Link
+              href="/privacy"
+              className="underline underline-offset-4 transition-colors hover:text-(--color-text)"
+              style={{ transitionDuration: 'var(--duration-fast)' }}
+            >
+              How I handle what you send
+            </Link>
+            .
+          </p>
         </div>
       </form>
     </section>

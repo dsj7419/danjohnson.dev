@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto'
+
 import { NextResponse } from 'next/server'
 
 import { siteConfig } from '@/config/site'
@@ -32,6 +34,11 @@ function isTrustedRequest(request: Request): boolean {
   const origin = request.headers.get('origin')
   if (!origin) return false
   return origin === siteConfig.url || origin === new URL(request.url).origin
+}
+
+/** IPs are personal data: log a short fingerprint, enough to correlate, never the address. */
+function ipFingerprint(ip: string): string {
+  return createHash('sha256').update(ip).digest('hex').slice(0, 12)
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -85,7 +92,7 @@ export async function POST(request: Request) {
 
     const rateCheck = checkRateLimit(ip)
     if (!rateCheck.allowed) {
-      console.warn(`[contact] Rate limited IP: ${ip}`)
+      console.warn(`[contact] Rate limited IP hash: ${ipFingerprint(ip)}`)
       return NextResponse.json(
         {
           success: false,
