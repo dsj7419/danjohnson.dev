@@ -203,7 +203,7 @@ Do not add plugins without strong justification.
 - `unsafe-eval` only in development mode.
 - Zod validation at trust boundaries (frontmatter, future form input).
 - No secrets in code. `.env.local` for development, Vercel env vars for production.
-- `pnpm audit` must return zero vulnerabilities before every push.
+- CI blocks on `pnpm audit --prod --audit-level=high`; the full audit runs as an advisory step. Dependabot opens grouped weekly PRs. Known accepted residue: `sprintf-js` (moderate, via gray-matter, no fix) and dev-only Vitest 3 advisories until the Vitest 4 upgrade.
 
 ---
 

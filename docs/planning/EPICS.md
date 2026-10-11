@@ -295,7 +295,7 @@ All pages written with concrete project references and cross-links.
 - [x] 404 page works
 - [x] Favicon and app icons (icon.svg)
 - [x] Security headers: A grade posture (HSTS, CSP, X-Frame-Options, etc.)
-- [x] Zero dependency vulnerabilities (pnpm audit clean)
+- [x] Production dependency audit enforced in CI (`pnpm audit --prod --audit-level=high`, Oct 2026); Dependabot weekly
 
 ### 5.6 Soft Launch
 
