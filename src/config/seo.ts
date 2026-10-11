@@ -22,9 +22,8 @@ export const defaultMetadata: Metadata = {
     title: siteConfig.title,
     description: siteConfig.description,
   },
-  alternates: {
-    canonical: siteConfig.url,
-  },
+  // No site-wide canonical: each route sets its own (buildPageMetadata / buildContentMetadata).
+  // A canonical here is inherited by every page that does not override it (seo-aeo-001).
   robots: {
     index: true,
     follow: true,

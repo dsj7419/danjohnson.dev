@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { ArticleEntry } from '@/components/blocks/article-entry'
@@ -13,6 +14,10 @@ import { Text } from '@/components/primitives/text'
 import { siteConfig } from '@/config/site'
 import { getAllArticles, getAllCaseStudies } from '@/lib/content'
 import { websiteJsonLd } from '@/lib/structured-data'
+
+export const metadata: Metadata = {
+  alternates: { canonical: '/' },
+}
 
 export default function HomePage() {
   const featuredWork = getAllCaseStudies()
