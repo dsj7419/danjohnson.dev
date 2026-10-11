@@ -2,7 +2,11 @@ import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 
 import { checkRateLimit } from '@/lib/actions/rate-limit'
-import { buildConfirmationEmail, buildContactEmail } from '@/lib/email/contact-email'
+import {
+  buildConfirmationEmail,
+  buildContactEmail,
+  sanitizeHeaderValue,
+} from '@/lib/email/contact-email'
 import { contactFormSchema } from '@/lib/schemas/contact'
 
 function extractClientIp(headersList: Headers): string {
@@ -70,7 +74,7 @@ export async function POST(request: Request) {
     const resend = new Resend(apiKey)
 
     const { error } = await resend.emails.send({
-      from: `${parsed.data.name} via danjohnson.dev <noreply@danjohnson.dev>`,
+      from: `${sanitizeHeaderValue(parsed.data.name)} via danjohnson.dev <noreply@danjohnson.dev>`,
       to: contactEmail,
       replyTo: [parsed.data.email],
       subject: email.subject,
@@ -91,7 +95,9 @@ export async function POST(request: Request) {
       .send({
         from: 'Dan Johnson <dan@danjohnson.dev>',
         to: parsed.data.email,
-        replyTo: 'dan@danjohnson.dev',
+        // The apex domain has no inbound mail (no MX record), so replies must go to the live inbox
+        // that receives notifications (devex-ops-015). Revisit when DNS forwarding exists.
+        replyTo: contactEmail,
         subject: confirmation.subject,
         html: confirmation.html,
         text: confirmation.text,

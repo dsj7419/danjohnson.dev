@@ -6,8 +6,21 @@ type ContactEmail = {
   text: string
 }
 
+/**
+ * Makes a user-supplied string safe to place in an email header (From display name, Subject):
+ * line breaks and control characters are removed so a submitter cannot inject headers, and angle
+ * brackets are removed so a display name cannot carry a forged address part (security-004).
+ */
+export function sanitizeHeaderValue(value: string): string {
+  return value
+    .replace(/[\r\n]+/g, ' ')
+    .replace(/[\u0000-\u001f\u007f<>]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 export function buildContactEmail(data: ContactFormData): ContactEmail {
-  const subject = `New inquiry from ${data.name} via danjohnson.dev`
+  const subject = `New inquiry from ${sanitizeHeaderValue(data.name)} via danjohnson.dev`
 
   const text = [
     `Name: ${data.name}`,
@@ -61,15 +74,9 @@ export function buildConfirmationEmail(data: ContactFormData): ContactEmail {
   const text = [
     `Hi ${data.name},`,
     '',
-    'Thank you for getting in touch. I received your message and will review your project details soon.',
+    'Thank you for getting in touch. I read every inquiry personally and reply within two business days.',
     '',
-    "Here's a copy of what you sent:",
-    '',
-    '---',
-    data.message,
-    '---',
-    '',
-    'If you need to add anything, just reply to this email.',
+    'If you need to add anything in the meantime, reply to this email.',
     '',
     'Dan Johnson',
     'danjohnson.dev',
@@ -81,12 +88,8 @@ export function buildConfirmationEmail(data: ContactFormData): ContactEmail {
 <body style="font-family: system-ui, -apple-system, sans-serif; color: #1a1a2e; max-width: 600px; margin: 0 auto; padding: 24px;">
   <div style="border-top: 3px solid #6366f1; padding-top: 24px;">
     <p style="font-size: 15px; line-height: 1.7; margin: 0 0 20px;">Hi ${escapeHtml(data.name)},</p>
-    <p style="font-size: 15px; line-height: 1.7; margin: 0 0 20px;">Thank you for getting in touch. I received your message and will review your project details soon.</p>
-    <div style="background: #f8f9fa; border-radius: 8px; padding: 20px; margin: 24px 0;">
-      <p style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #888; margin: 0 0 12px;">Your message</p>
-      <p style="font-size: 14px; line-height: 1.6; white-space: pre-wrap; margin: 0; color: #333;">${escapeHtml(data.message)}</p>
-    </div>
-    <p style="font-size: 15px; line-height: 1.7; margin: 0 0 20px;">If you need to add anything, just reply to this email.</p>
+    <p style="font-size: 15px; line-height: 1.7; margin: 0 0 20px;">Thank you for getting in touch. I read every inquiry personally and reply within two business days.</p>
+    <p style="font-size: 15px; line-height: 1.7; margin: 0 0 20px;">If you need to add anything in the meantime, reply to this email.</p>
     <div style="border-top: 1px solid #e5e5e5; padding-top: 20px; margin-top: 32px;">
       <p style="font-size: 14px; font-weight: 600; margin: 0;">Dan Johnson</p>
       <p style="font-size: 13px; color: #666; margin: 4px 0 0;"><a href="https://danjohnson.dev" style="color: #6366f1; text-decoration: none;">danjohnson.dev</a></p>
