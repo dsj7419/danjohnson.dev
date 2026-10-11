@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation'
 import { ImageResponse } from 'next/og'
 
 import { siteConfig } from '@/config/site'
@@ -8,12 +9,14 @@ import { formatPublishDate } from '@/lib/dates'
 // the content loader in @/lib/content uses Node's `fs` and `path` modules
 // to read MDX files from disk. The edge runtime forbids Node built-ins.
 // Functional impact at build time is zero: `generateStaticParams` plus
-// `dynamicParams = false` on the parent page means every PNG is generated
-// once at build time and served as a static asset from the CDN regardless
-// of runtime choice.
+// `dynamicParams = false` (declared here as well as on the parent page, so an
+// unknown slug is a 404 rather than an on-demand render) means every PNG is
+// generated once at build time and served as a static asset from the CDN
+// regardless of runtime choice.
 export const alt = 'Article by Dan Johnson'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
+export const dynamicParams = false
 
 export async function generateStaticParams() {
   return getAllArticles().map((entry) => ({ slug: entry.slug }))
@@ -35,26 +38,7 @@ export default async function OgImage({ params }: ImageProps) {
   const { slug } = await params
   const entry = getArticle(slug)
 
-  if (!entry) {
-    return new ImageResponse(
-      <div
-        style={{
-          background: COLORS.background,
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontFamily: 'system-ui, sans-serif',
-          color: COLORS.title,
-          fontSize: '32px',
-        }}
-      >
-        Dan Johnson — Article
-      </div>,
-      { ...size },
-    )
-  }
+  if (!entry) notFound()
 
   const { title, description, category, date } = entry.frontmatter
   const readingTime = entry.readingTime
