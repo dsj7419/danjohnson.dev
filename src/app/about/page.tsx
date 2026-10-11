@@ -1,9 +1,11 @@
 import type { Metadata } from 'next'
 
+import { CurrentlyStrip } from '@/components/blocks/currently-strip'
 import { Container } from '@/components/primitives/container'
 import { Heading } from '@/components/primitives/heading'
 import { Section } from '@/components/primitives/section'
 import { Stack } from '@/components/primitives/stack'
+import { siteConfig } from '@/config/site'
 import { getPage } from '@/lib/content'
 import { buildPageMetadata } from '@/lib/metadata'
 import { personJsonLd } from '@/lib/structured-data'
@@ -31,6 +33,7 @@ export default async function AboutPage() {
         <Container width="reading">
           <Stack gap={8}>
             <Heading level={1}>About</Heading>
+            <CurrentlyStrip currently={siteConfig.currently} />
             <Stack gap={6} className="*:first:mt-0">
               <Content />
             </Stack>

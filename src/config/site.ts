@@ -8,6 +8,14 @@ export const siteConfig = {
   social: {
     github: 'https://github.com/dsj7419',
   },
+  // One line of current state, rendered on the homepage and About. Edit when things change;
+  // `updated` makes staleness visible to the owner before it is visible to visitors.
+  currently: {
+    focus:
+      'Building Accrulith, a deterministic game engine in Go, and ForgeGate, a governed ticket process for AI-written code',
+    status: 'Taking a limited number of new engagements',
+    updated: '2026-10-12',
+  },
   nav: [
     { label: 'Work', href: '/work' },
     { label: 'How I Build', href: '/how-i-build' },

@@ -26,6 +26,13 @@ describe('ArticleEntry', () => {
     expect(screen.getByText('How I Design Software Systems')).toBeInTheDocument()
   })
 
+  it('renders the date as a time element with a machine-readable datetime', () => {
+    render(<ArticleEntry {...props} />)
+    const time = screen.getByText('April 1, 2026')
+    expect(time.tagName).toBe('TIME')
+    expect(time).toHaveAttribute('dateTime', '2026-04-01')
+  })
+
   it('renders the description', () => {
     render(<ArticleEntry {...props} />)
     expect(screen.getByText(/Architecture-first/)).toBeInTheDocument()

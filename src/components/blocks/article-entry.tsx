@@ -40,7 +40,7 @@ export function ArticleEntry({
         </Link>
         <p className="text-sm leading-relaxed text-(--color-text-muted)">{description}</p>
         <p className="text-xs text-(--color-text-faint)">
-          {formattedDate} &middot; {readingTime} min read
+          <time dateTime={date}>{formattedDate}</time> &middot; {readingTime} min read
         </p>
       </div>
     </article>

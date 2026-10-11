@@ -82,8 +82,14 @@ export default async function ArticlePage({ params }: PageProps) {
             <Heading level={1}>{entry.frontmatter.title}</Heading>
             <Text variant="lead">{entry.frontmatter.description}</Text>
             <Text variant="small">
-              {formattedDate} &middot; {entry.readingTime} min read
-              {updatedOn !== undefined && <> &middot; Updated {formatPublishDate(updatedOn)}</>}
+              <time dateTime={entry.frontmatter.date}>{formattedDate}</time> &middot;{' '}
+              {entry.readingTime} min read
+              {updatedOn !== undefined && (
+                <>
+                  {' '}
+                  &middot; Updated <time dateTime={updatedOn}>{formatPublishDate(updatedOn)}</time>
+                </>
+              )}
             </Text>
           </Stack>
         </Container>

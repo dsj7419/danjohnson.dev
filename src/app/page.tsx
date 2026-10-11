@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { ArticleEntry } from '@/components/blocks/article-entry'
+import { CurrentlyStrip } from '@/components/blocks/currently-strip'
 import { ProjectCard } from '@/components/blocks/project-card'
 import { Button } from '@/components/primitives/button'
 import { Container } from '@/components/primitives/container'
@@ -47,6 +48,7 @@ export default function HomePage() {
               and performance-critical applications with a focus on long-term architecture,
               security, and real-world usability.
             </Text>
+            <CurrentlyStrip currently={siteConfig.currently} className="max-w-(--width-reading)" />
           </Stack>
         </Container>
       </Section>

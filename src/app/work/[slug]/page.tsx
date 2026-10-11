@@ -91,6 +91,7 @@ export default async function CaseStudyPage({ params }: PageProps) {
             <CaseStudyMeta
               role={frontmatter.role}
               date={frontmatter.date}
+              updatedAt={frontmatter.updatedAt}
               client={frontmatter.client}
               organization={frontmatter.organization}
               duration={frontmatter.duration}
