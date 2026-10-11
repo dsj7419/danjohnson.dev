@@ -1,4 +1,5 @@
 import fs from 'fs'
+import GithubSlugger from 'github-slugger'
 import matter from 'gray-matter'
 import path from 'path'
 import type { z } from 'zod'
@@ -19,13 +20,35 @@ import {
 const CONTENT_DIR = path.join(process.cwd(), 'src', 'content')
 const WORDS_PER_MINUTE = 225
 
+/**
+ * Slug for a single heading, byte-identical to what rehype-slug stamps on the rendered element.
+ * rehype-slug uses github-slugger, which removes punctuation without collapsing the hyphens left
+ * behind ("Decisions & Tradeoffs" → "decisions--tradeoffs"); a hand-rolled slugger that collapses
+ * them produces TOC links that point at ids which do not exist.
+ */
 export function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
+  return new GithubSlugger().slug(text)
+}
+
+/**
+ * The text rehype-slug sees: the heading's rendered text content, with inline markdown removed.
+ * Covers the constructs that appear in headings on this site (code spans, links, emphasis).
+ */
+function headingText(markdown: string): string {
+  return (
+    markdown
+      .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
+      .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+      .replace(/`([^`]+)`/g, '$1')
+      .replace(/\*\*(.+?)\*\*/g, '$1')
+      .replace(/\*(.+?)\*/g, '$1')
+      // Underscore emphasis only at word boundaries: `MAX_OPEN_CONNS` is an identifier, not italics,
+      // and github-slugger keeps underscores in ids.
+      .replace(/(?<!\w)__(.+?)__(?!\w)/g, '$1')
+      .replace(/(?<!\w)_(.+?)_(?!\w)/g, '$1')
+      .replace(/<[^>]+>/g, '')
+      .trim()
+  )
 }
 
 export function calculateReadingTime(content: string): number {
@@ -38,16 +61,19 @@ export function calculateReadingTime(content: string): number {
 export function extractToc(content: string): TocEntry[] {
   const headingRegex = /^(#{2,3})\s+(.+)$/gm
   const entries: TocEntry[] = []
+  // One slugger per document: rehype-slug de-duplicates repeated headings per page ("outcome-1").
+  const slugger = new GithubSlugger()
 
   let match: RegExpExecArray | null = headingRegex.exec(content)
   while (match !== null) {
     const hashes = match[1]
-    const text = match[2]
-    if (hashes !== undefined && text !== undefined) {
+    const raw = match[2]
+    if (hashes !== undefined && raw !== undefined) {
+      const text = headingText(raw)
       entries.push({
         depth: hashes.length as 2 | 3,
         text,
-        id: slugify(text),
+        id: slugger.slug(text),
       })
     }
     match = headingRegex.exec(content)

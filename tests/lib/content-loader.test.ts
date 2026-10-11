@@ -1,4 +1,5 @@
 import fs from 'fs'
+import GithubSlugger from 'github-slugger'
 
 import {
   calculateReadingTime,
@@ -127,31 +128,58 @@ describe('extractToc', () => {
     const toc = extractToc(content)
     expect(toc[0]?.id).toBe('why-ai-costs-matter-a-real-world-analysis')
   })
+
+  // Regression guards for architecture-002 / code-quality-001: the TOC must produce the same ids
+  // that rehype-slug (github-slugger) stamps on the rendered headings, or TOC links point nowhere.
+  it('matches rehype-slug ids for headings with ampersands and dashes', () => {
+    const content = "## Decisions & Tradeoffs\n\n## It isn't language — it's intent"
+    const toc = extractToc(content)
+    expect(toc.map((e) => e.id)).toEqual(['decisions--tradeoffs', 'it-isnt-language--its-intent'])
+  })
+
+  it('de-duplicates repeated headings the way rehype-slug does', () => {
+    const content = '## Outcome\n\n### Outcome\n\n## Outcome'
+    const toc = extractToc(content)
+    expect(toc.map((e) => e.id)).toEqual(['outcome', 'outcome-1', 'outcome-2'])
+  })
+
+  it('starts a fresh id sequence for every document', () => {
+    expect(extractToc('## Outcome')[0]?.id).toBe('outcome')
+    expect(extractToc('## Outcome')[0]?.id).toBe('outcome')
+  })
+
+  it('slugs the rendered text of headings that contain inline code, links and emphasis', () => {
+    const content = '## Using `depguard` with [rehype-slug](https://example.com) and *care*'
+    const toc = extractToc(content)
+    expect(toc[0]?.text).toBe('Using depguard with rehype-slug and care')
+    expect(toc[0]?.id).toBe('using-depguard-with-rehype-slug-and-care')
+  })
+
+  it('keeps intraword underscores (identifiers are not emphasis; github-slugger keeps them)', () => {
+    const content = '## Tuning `MAX_OPEN_CONNS` at COMBAT_SCALE=10,000 with _real_ emphasis'
+    const toc = extractToc(content)
+    expect(toc[0]?.text).toBe('Tuning MAX_OPEN_CONNS at COMBAT_SCALE=10,000 with real emphasis')
+    expect(toc[0]?.id).toBe('tuning-max_open_conns-at-combat_scale10000-with-real-emphasis')
+  })
 })
 
 describe('slugify', () => {
-  it('converts text to lowercase', () => {
-    expect(slugify('Hello World')).toBe('hello-world')
+  it('produces exactly what github-slugger produces for a single heading', () => {
+    const samples = [
+      'Hello World',
+      "What's Next?",
+      'one - two --- three',
+      'AI & Machine Learning: An Overview',
+      'Layer 1: imports',
+      'Security & Performance',
+    ]
+    for (const sample of samples) {
+      expect(slugify(sample)).toBe(new GithubSlugger().slug(sample))
+    }
   })
 
-  it('replaces spaces with hyphens', () => {
-    expect(slugify('some text here')).toBe('some-text-here')
-  })
-
-  it('removes special characters', () => {
-    expect(slugify("What's Next?")).toBe('whats-next')
-  })
-
-  it('collapses multiple hyphens', () => {
-    expect(slugify('one - two --- three')).toBe('one-two-three')
-  })
-
-  it('trims leading and trailing hyphens', () => {
-    expect(slugify(' -hello world- ')).toBe('hello-world')
-  })
-
-  it('handles colons and ampersands', () => {
-    expect(slugify('AI & Machine Learning: An Overview')).toBe('ai-machine-learning-an-overview')
+  it('does not collapse the double hyphen github-slugger leaves after a removed character', () => {
+    expect(slugify('Decisions & Tradeoffs')).toBe('decisions--tradeoffs')
   })
 })
 
