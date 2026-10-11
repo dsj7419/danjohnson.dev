@@ -1,6 +1,6 @@
-import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 
+import { siteConfig } from '@/config/site'
 import { checkRateLimit } from '@/lib/actions/rate-limit'
 import {
   buildConfirmationEmail,
@@ -18,17 +18,66 @@ function extractClientIp(headersList: Headers): string {
   return headersList.get('x-real-ip') ?? 'unknown'
 }
 
+/**
+ * The form is the only legitimate caller: it posts JSON from this site's own origin.
+ * Anything else (cross-site forms laundering a visitor's IP through the rate limiter,
+ * scripted senders) is refused before the body is read or any budget is spent.
+ */
+function isTrustedRequest(request: Request): boolean {
+  const contentType = request.headers.get('content-type') ?? ''
+  if (!contentType.toLowerCase().startsWith('application/json')) return false
+
+  if (request.headers.get('sec-fetch-site') === 'same-origin') return true
+
+  const origin = request.headers.get('origin')
+  if (!origin) return false
+  return origin === siteConfig.url || origin === new URL(request.url).origin
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+async function readJsonObject(request: Request): Promise<Record<string, unknown> | null> {
+  try {
+    const parsed: unknown = await request.json()
+    return isRecord(parsed) ? parsed : null
+  } catch {
+    return null
+  }
+}
+
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as Record<string, unknown>
+    if (!isTrustedRequest(request)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'This request could not be verified. Please reload the page and try again.',
+        },
+        { status: 403 },
+      )
+    }
+
+    const body = await readJsonObject(request)
+    if (!body) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Invalid request. Please reload the page and try again.',
+          fieldErrors: {},
+        },
+        { status: 400 },
+      )
+    }
 
     const honeypot = body['website']
     if (honeypot && String(honeypot).length > 0) {
+      console.warn('[contact] Honeypot hit')
       return NextResponse.json({ success: true })
     }
 
-    const headersList = await headers()
-    const ip = extractClientIp(headersList)
+    const ip = extractClientIp(request.headers)
 
     if (ip === 'unknown') {
       console.warn('[contact] No client IP in headers — rate limiting degraded')

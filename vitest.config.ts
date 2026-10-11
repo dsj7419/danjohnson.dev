@@ -25,12 +25,18 @@ export default defineConfig({
       exclude: [
         'src/**/*.d.ts',
         'src/types/**',
-        'src/app/**',
+        // RSC page bodies, layouts and image routes render only under Next; the API route is covered.
+        'src/app/**/page.tsx',
+        'src/app/**/layout.tsx',
+        'src/app/**/opengraph-image.tsx',
+        'src/app/not-found.tsx',
+        'src/app/robots.ts',
+        'src/app/sitemap.ts',
+        'src/app/writing/feed.xml/route.ts',
         'src/config/**',
         'src/lib/fonts.ts',
         'src/components/layout/theme-toggle.tsx',
         'src/components/layout/nav-link.tsx',
-        'src/lib/structured-data.ts',
       ],
       thresholds: {
         lines: 80,
