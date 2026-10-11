@@ -17,7 +17,7 @@ export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 export const dynamicParams = false
 
-export async function generateStaticParams() {
+export function generateStaticParams() {
   return getAllCaseStudies().map((entry) => ({ slug: entry.slug }))
 }
 

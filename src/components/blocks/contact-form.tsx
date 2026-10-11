@@ -62,14 +62,15 @@ export function ContactForm({ className = '' }: { className?: string }) {
   const [submittedName, setSubmittedName] = useState('')
   const formRef = useRef<HTMLFormElement>(null)
 
-  const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = useCallback(async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
     setPending(true)
     setState({ success: false })
 
     const form = e.currentTarget
     const formData = new FormData(form)
-    setSubmittedName(String(formData.get('name') ?? ''))
+    const submittedNameField = formData.get('name')
+    setSubmittedName(typeof submittedNameField === 'string' ? submittedNameField : '')
 
     try {
       const body = {

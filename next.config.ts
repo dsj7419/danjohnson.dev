@@ -44,13 +44,13 @@ const nextConfig: NextConfig = {
     resolveExtensions: ['.mdx', '.md', '.tsx', '.ts', '.jsx', '.js', '.json'],
   },
 
-  async headers() {
-    return [
+  headers() {
+    return Promise.resolve([
       {
         source: '/(.*)',
         headers: securityHeaders,
       },
-    ]
+    ])
   },
 }
 

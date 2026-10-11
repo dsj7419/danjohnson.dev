@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import type { ComponentType } from 'react'
 
 import { CaseStudyMeta } from '@/components/blocks/case-study-meta'
 import { CaseStudyNav } from '@/components/blocks/case-study-nav'
@@ -19,7 +20,9 @@ type PageProps = {
   params: Promise<{ slug: string }>
 }
 
-export async function generateStaticParams() {
+type MdxModule = { default: ComponentType }
+
+export function generateStaticParams() {
   return getAllCaseStudies().map((entry) => ({ slug: entry.slug }))
 }
 
@@ -48,22 +51,17 @@ export default async function CaseStudyPage({ params }: PageProps) {
 
   const allCaseStudies = getAllCaseStudies()
   const currentIndex = allCaseStudies.findIndex((e) => e.slug === slug)
-  const previous =
-    currentIndex > 0
-      ? {
-          slug: allCaseStudies[currentIndex - 1]!.slug,
-          title: allCaseStudies[currentIndex - 1]!.frontmatter.title,
-        }
-      : undefined
-  const next =
-    currentIndex < allCaseStudies.length - 1
-      ? {
-          slug: allCaseStudies[currentIndex + 1]!.slug,
-          title: allCaseStudies[currentIndex + 1]!.frontmatter.title,
-        }
-      : undefined
+  const previousEntry = allCaseStudies[currentIndex - 1]
+  const nextEntry = allCaseStudies[currentIndex + 1]
+  const previous = previousEntry && {
+    slug: previousEntry.slug,
+    title: previousEntry.frontmatter.title,
+  }
+  const next = nextEntry && { slug: nextEntry.slug, title: nextEntry.frontmatter.title }
 
-  const { default: Content } = await import(`@/content/case-studies/${slug}.mdx`)
+  // A template-literal import cannot be matched to the '*.mdx' module declaration, so the
+  // module shape is asserted here; the slug was validated against the content index above.
+  const { default: Content } = (await import(`@/content/case-studies/${slug}.mdx`)) as MdxModule
   const { frontmatter } = entry
 
   return (

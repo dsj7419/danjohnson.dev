@@ -82,10 +82,10 @@ export function extractToc(content: string): TocEntry[] {
   return entries
 }
 
-function loadContentEntries<S extends z.ZodType>(
+function loadContentEntries<Output>(
   directory: string,
-  schema: S,
-): ContentEntry<z.output<S>>[] {
+  schema: z.ZodType<Output, z.ZodTypeDef, unknown>,
+): ContentEntry<Output>[] {
   const contentPath = path.join(CONTENT_DIR, directory)
 
   if (!fs.existsSync(contentPath)) return []

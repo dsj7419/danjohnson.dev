@@ -4,9 +4,9 @@ import { CopyButton } from '@/components/blocks/copy-button'
 
 const mockWriteText = vi.fn().mockResolvedValue(undefined)
 
-vi.stubGlobal('navigator', {
-  ...navigator,
-  clipboard: { writeText: mockWriteText },
+Object.defineProperty(navigator, 'clipboard', {
+  value: { writeText: mockWriteText },
+  configurable: true,
 })
 
 function renderInCodeBlock() {

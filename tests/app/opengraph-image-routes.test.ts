@@ -13,7 +13,9 @@ vi.mock('next/navigation', () => ({ notFound: mockNotFound }))
 
 vi.mock('next/og', () => ({
   ImageResponse: class MockImageResponse {
+    readonly args: unknown[]
     constructor(...args: unknown[]) {
+      this.args = args
       imageResponseCalls.push(args)
     }
   },
@@ -67,7 +69,7 @@ describe.each(routes)('$label opengraph-image route', ({ load, knownSlug }) => {
   it('generates a static param for every published entry', async () => {
     const route = await load()
 
-    const params = await route.generateStaticParams()
+    const params = route.generateStaticParams()
     const slug = knownSlug()
 
     expect(params.length).toBeGreaterThan(0)

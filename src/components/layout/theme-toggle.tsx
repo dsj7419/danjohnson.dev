@@ -15,7 +15,7 @@ function subscribe(callback: () => void): () => void {
 }
 
 export function ThemeToggle() {
-  const theme = useSyncExternalStore(subscribe, getStoredTheme, () => 'system' as Theme)
+  const theme = useSyncExternalStore(subscribe, getStoredTheme, (): Theme => 'system')
 
   const cycle = useCallback(() => {
     const order: Theme[] = ['light', 'dark', 'system']

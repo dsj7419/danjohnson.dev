@@ -72,7 +72,7 @@ export async function POST(request: Request) {
     }
 
     const honeypot = body['website']
-    if (honeypot && String(honeypot).length > 0) {
+    if (typeof honeypot === 'string' && honeypot.length > 0) {
       console.warn('[contact] Honeypot hit')
       return NextResponse.json({ success: true })
     }
@@ -151,7 +151,7 @@ export async function POST(request: Request) {
         html: confirmation.html,
         text: confirmation.text,
       })
-      .catch((err) => {
+      .catch((err: unknown) => {
         const msg = err instanceof Error ? err.message : 'Unknown'
         console.error(`[contact] Confirmation email failed: ${msg}`)
       })

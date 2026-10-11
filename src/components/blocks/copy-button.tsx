@@ -9,7 +9,7 @@ export function CopyButton() {
     const pre = e.currentTarget.closest('pre')
     const code = pre?.querySelector('code')
     if (!code) return
-    await navigator.clipboard.writeText(code.textContent ?? '')
+    await navigator.clipboard.writeText(code.textContent)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }, [])

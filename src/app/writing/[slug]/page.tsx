@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import type { ComponentType } from 'react'
 
 import { TableOfContents } from '@/components/blocks/table-of-contents'
 import { Container } from '@/components/primitives/container'
@@ -19,7 +20,9 @@ type PageProps = {
   params: Promise<{ slug: string }>
 }
 
-export async function generateStaticParams() {
+type MdxModule = { default: ComponentType }
+
+export function generateStaticParams() {
   return getAllArticles().map((entry) => ({ slug: entry.slug }))
 }
 
@@ -46,13 +49,15 @@ export default async function ArticlePage({ params }: PageProps) {
   const entry = getArticle(slug)
   if (!entry) notFound()
 
-  const { default: Content } = await import(`@/content/writing/${slug}.mdx`)
+  // A template-literal import cannot be matched to the '*.mdx' module declaration, so the
+  // module shape is asserted here; the slug was validated against the content index above.
+  const { default: Content } = (await import(`@/content/writing/${slug}.mdx`)) as MdxModule
 
   const formattedDate = formatPublishDate(entry.frontmatter.date)
 
-  const hasUpdate =
-    entry.frontmatter.updatedAt !== undefined &&
-    entry.frontmatter.updatedAt !== entry.frontmatter.date
+  const { updatedAt } = entry.frontmatter
+  const updatedOn =
+    updatedAt !== undefined && updatedAt !== entry.frontmatter.date ? updatedAt : undefined
 
   return (
     <article>
@@ -78,9 +83,7 @@ export default async function ArticlePage({ params }: PageProps) {
             <Text variant="lead">{entry.frontmatter.description}</Text>
             <Text variant="small">
               {formattedDate} &middot; {entry.readingTime} min read
-              {hasUpdate && (
-                <> &middot; Updated {formatPublishDate(entry.frontmatter.updatedAt!)}</>
-              )}
+              {updatedOn !== undefined && <> &middot; Updated {formatPublishDate(updatedOn)}</>}
             </Text>
           </Stack>
         </Container>

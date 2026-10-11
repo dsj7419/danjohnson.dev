@@ -37,7 +37,7 @@ const baseStyles =
 export function Button({ variant = 'primary', className = '', children, ...props }: ButtonProps) {
   const classes = `${baseStyles} ${variantStyles[variant]} ${className}`.trim()
 
-  if ('href' in props && props.href !== undefined) {
+  if (props.href !== undefined) {
     const { href, ...linkProps } = props
     return (
       <Link href={href} className={classes} {...linkProps}>
@@ -47,7 +47,7 @@ export function Button({ variant = 'primary', className = '', children, ...props
   }
 
   return (
-    <button className={classes} {...(props as ComponentPropsWithoutRef<'button'>)}>
+    <button className={classes} {...props}>
       {children}
     </button>
   )
