@@ -1,0 +1,174 @@
+---
+title: 'How I Let an AI Write Code I Will Ship'
+description: 'The right unit of trust for a coding agent is the smallest action you cannot take back. How ForgeGate lets an agent write most of the code while a program checks its scope, two reviewers must cite evidence, and a human reads every diff before anything is committed — and what it still cannot enforce.'
+date: '2026-10-11'
+tags:
+  - ai-assisted-engineering
+  - governance
+  - claude-code
+  - process
+category: 'ai'
+featured: true
+draft: false
+related:
+  - '/work/accrulith'
+  - '/writing/using-ai-in-real-products'
+  - '/work/chimera'
+---
+
+import { Callout } from '@/components/blocks/callout'
+import { RelatedContent } from '@/components/blocks/related-content'
+
+For most of this year I have not let Claude Code commit to any repository I care about.
+
+Not because the output is bad. Most of the time it is good, and some of the time it is better than what I would have written at eleven at night. The problem is that "most of the time" is the wrong unit for a commit. A commit is small and permanent and sits in a history other people will read. A push is more permanent. A merge to main, a force-push, a deleted branch, an opened pull request under my name — each is harder to take back than the last, and none of them cares how accurate the model was on average.
+
+So I built a control system around the agent instead of a better prompt for it. One ticket at a time, each with a list of files the agent may touch. Two independent verifiers that have to cite evidence before a project-manager role can pass the work. A hook that classifies every git command the agent tries to run and refuses the destructive ones. And a hard stop before the commit, where a human reads the diff.
+
+The code is public. It is called [ForgeGate](https://github.com/dsj7419/forge-gate), it has 784 tests, and it has been used to build itself. [Accrulith](/work/accrulith), a Go engine with fifteen signed tags, was built under the same process by hand — one ticket, two blind verifier subagents using these charters, a human at the commit gate — before the orchestrator was mature enough to trust with it. That ordering was deliberate, and I will come back to it.
+
+I hold client work to the same line. An agent may do much of the typing, but every change is scoped to a ticket, reviewed against evidence, and read by me before it is committed. The tickets and review notes are yours if you want them.
+
+## The unit of trust
+
+Most of the public conversation about agentic coding is about capability — can the model do the task, how often is it wrong. Those are real questions, and the wrong frame for autonomy, because capability is a distribution and a policy cannot be set on an average.
+
+The frame that worked for me is reversibility. Every action an agent can take sits somewhere on a line from "costs nothing to undo" to "cannot be undone." Reading a file is at one end. Editing a file in a working tree is near it. Staging is further along. A commit on a feature branch is further still. A push to a shared branch, a merge, a deletion, an outward message to another person — those are at the far end, and that is where the rules have to be hard rather than advisory.
+
+Drawn that way, the line gives three rules. Reversible actions get light supervision. Semi-permanent ones need proof first. Irreversible ones the agent cannot do and the human can.
+
+## Four classes of git
+
+Start with the hook, because it is the part that refuses things. Claude Code lets you run a program before every tool call, and ForgeGate uses that to classify every shell command that mentions `git` or `gh` into one of four classes.
+
+The short version: the agent may look, edit and stage specific files, it may open a pull request on its own branch, and it may not do anything that changes shared history. The table is the full rule.
+
+| Class                    | Examples                                                                                                                                      | Agent gets                                                                                   |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| 1. Read-only or local    | `git status`, `git diff`, `git log`, `git show`, `git fetch`, `git switch <branch>`, `git switch -c <feature-branch>`, `git branch` as a list | Allowed                                                                                      |
+| 2. Staging               | `git add <explicit path>`                                                                                                                     | Allowed; `git add .`, `-A`, `--all`, globs and parent-directory paths are denied             |
+| 3. Pull-request workflow | `git push -u origin <feature-branch>`, `gh pr create`, `gh pr view`, `gh pr checks`                                                           | Allowed for a simple feature branch name; never main, master, HEAD, force, or refspec tricks |
+| 4. Everything else       | `git commit`, `git merge`, `git reset`, `git checkout` in every form, `git push` to main, `gh pr merge`, branch deletion                      | Denied                                                                                       |
+
+Two details carry most of the safety. First, the classifier only acts on commands it can fully parse — a simple, static command with no shell metacharacters. Anything with chaining, substitution or shell grouping that could hide a `git` is denied outright, and anything the hook cannot decide fails closed. That rule came out of about eight rounds of adversarial testing, each of which found a new way to spell `git push` that the previous version let through. Over-refusing exotic shell is acceptable. Under-refusing one push is not.
+
+Second, the human bypass is explicit and separate. Commands prefixed with `!` run in my own shell and never pass through the agent's hook. That prefix is the commit gate, and the agent cannot type it.
+
+<Callout variant="warning" title="What the hook is not">
+  It is not a security boundary. It is a Claude Code customization, and Claude
+  Code's safe mode can disable customizations, including this one. It defends
+  against an agent's mistakes and overreach, not against an attacker who
+  controls the session. The README says so in a warning box.
+</Callout>
+
+## One ticket at a time
+
+The hook limits damage. The process limits scope. ForgeGate's unit of work is a ticket. It is a short contract: acceptance criteria, the commands that verify them, a list of paths the agent may edit, a list it may not, and a kind — either "write the failing tests" or "make them pass." The agent gets one ticket per dispatch and nothing else.
+
+The engineer charter is short and most of it is prohibitions. Do not edit outside the allowed paths. Do not change the ticket's scope or acceptance criteria to make the work fit. Do not invent test results or claim a command passed without running it. Do not report progress you cannot trace to a tool result from this session. Each of those is something an agent will do if nothing stops it. Wrong answers are the rarer failure; the common one is the ticket getting wider until the work fits.
+
+The orchestrator then re-runs the ticket's verification commands itself instead of trusting the engineer's report. The summary is an input to review, not evidence.
+
+## Two verifiers that cannot see each other's job
+
+After the engineer, two more agents look at the work, and they are blind to each other.
+
+The semantic verifier answers one question: does the repository, as it now exists, satisfy each acceptance criterion? It has to name the evidence — a file and line, a test name, a command and its output — for every criterion. Its charter puts the standard in one line, under the heading of things it must not do: _Approve on vibes. "Looks good" is an invalid verdict._ If it cannot find evidence for a criterion, the criterion is unmet and the verdict is reject. It is also told that evidence it did not gather in this session is not evidence, which stops it from approving on the strength of the engineer's own narrative.
+
+The scope verifier answers a different question and is forbidden from answering the first one: did the diff touch only the allowed paths and none of the forbidden ones? It is instructed not to read the governance documents, not to judge quality, and not to pass a diff that touches a protected path "regardless of how small." The fences exist so that this role needs no judgment. Separating the two keeps the quality review from being talked into a scope exception and the scope review from being talked into a quality exception. Both verifiers emit a structured verdict.
+
+The split is the same one [Chimera](/work/chimera) uses for verification — a first gate that checks structure and is not allowed to have opinions, a second that judges only what passed the first, and neither doing the other's job.
+
+## Core decides, agents narrate
+
+ForgeGate is two things. ForgeGate proper is the Claude Code surface: slash commands, agent charters, the one-ticket orchestrator. Underneath it is Forge Core, a deterministic TypeScript engine with a plain terminal interface and no prompt or model logic. The contract between them is one-directional. Claude Code consumes Core. Core never calls a model.
+
+Every agent output is captured byte for byte and handed to Core's parser, which validates it against the role's schema. Malformed output halts the run. It is never repaired, summarized, reconstructed or re-asked, because every one of those is a place where an orchestrating agent can substitute its own judgment for the verifier's and nobody would notice. The project-manager role's decision identifier is assigned by Core from a per-epic ledger and cross-checked when the PM echoes it back, so a decision cannot be invented or renumbered. And the run report that Core writes at the end carries its safety fields with their types pinned to a single value:
+
+```typescript title="run-report schema (simplified)"
+const SafetySchema = z
+  .object({
+    committed: z.literal(false),
+    pushed: z.literal(false),
+    pr_opened: z.literal(false),
+    merged: z.literal(false),
+    status_write_back: z.literal(false),
+    journal_written: z.literal(false),
+  })
+  .strict()
+```
+
+That is version one's thesis in the type system. A run report that claims the agent committed something does not parse. Changing it means a new schema version and a human decision, not a flipped boolean.
+
+Two runs on the same epic at the same time would corrupt that ledger, so there is a lock. It is a file created with the operating system's exclusive-create flag: the create is the mutual exclusion, and there is no check-then-act window. Release is owner-checked, a stale lock is reported and never silently cleared, and breaking one is a human-gated command that only works for a provably dead process on the same host. It is the ordinary engineering of a mutex.
+
+## The gate
+
+On a passing run the orchestrator prints a handoff — the changed files, the verification summary, the PM's decision, a proposed status transition, and a suggested commit message with the `git add` and `git commit` commands ready to paste. Then it stops. Commit, push, pull request and status write-back are out of scope for version one; the typed-false safety fields are what keep them out.
+
+On a failing or escalated run it writes the run report, leaves the branch and the working tree intact, and prints a recovery brief with suggested, not executed, cleanup. Evidence is preserved; nothing is tidied away.
+
+It is the slowest part of the system. The gate is a real stop, not a prompt that defaults to yes.
+
+## What each layer actually guarantees
+
+It would be easy to describe all of this as "the agent is sandboxed." It is not, and the README has a table that says so. Per layer:
+
+| Layer                    | Mechanism                                                                          | What it guarantees                                                                                 |
+| ------------------------ | ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Core                     | typed schemas, pinned decision ids, safety fields typed false, attested run report | **Validates and attests.** Improvisation is rejected at parse time.                                |
+| Path-fence guard         | deterministic diff against the ticket's fence                                      | **Detects** scope violations and fails the run. It runs after the edit, not before it.             |
+| Permissions hook         | pre-tool-call classifier on git and gh                                             | **Prevents** unsafe actions at the tool boundary. Disabled by safe mode.                           |
+| Orchestration discipline | written procedure plus tests that lock the protocol                                | **Constrains** the runner. Not structurally enforced by Core; a determined operator could deviate. |
+
+Core attests, the guard detects, the hook prevents, and the human approves.
+
+## What it has produced
+
+Accrulith is the evidence, with the caveat from the introduction stated properly. Accrulith's first commit predates ForgeGate's by nine days, and its own engineer handoffs say, in bold, not to route Accrulith work through ForgeGate while the tool was immature. So the engine was built under the process ForgeGate encodes — one ticket at a time, failing test first, two blind verifier passes, pull request, CI, merge, signed annotated tag. That ran by hand for the first five sprints, and with ForgeGate's verifier charters dispatched as subagents from June on. The orchestrator, the hook and the ledger never touched it.
+
+Fifteen tags in under six weeks. The most recent one holds a dozen pull requests and zero changes to engine runtime behavior: documentation truth, a TypeScript toolchain lane, test hygiene, and four new linters turned on. In plain terms, fifteen checkpoints in six weeks, each a state of the code I would hand to someone else without apology, with a record of why every change was let in.
+
+ForgeGate itself was built through its own governed loop once the loop existed, and the full happy path has been proven live against a disposable clone of a sandbox repository, under the live hook, with real agents and a real lock.
+
+## What went wrong, and what is still missing
+
+The first live proof of the workflow runner failed before it reached its own lock. The runner read repository state with `git -C <path> status` — a read-only command in a form the hook did not recognize as read-only — and the hook refused it. The run died at its first git call. The fix was a hook-free, read-only way for Core to compute repository facts, and the full happy-path proof passed the next day under the live hook against a disposable clone.
+
+Early on, the harness wrote scratch files into whatever directory the session happened to be in, which once meant a repository. The fix is a launch gate that refuses to run a workflow from inside a working tree at all. Workflows launch from a temporary directory the tool owns, and a run launched from the wrong place escalates before it acquires anything.
+
+A later proof of the workflow-backed runner stalled on something I had not predicted: the harness's own permission classifier refused to let a bridge agent persist another agent's verdict. The fix moved that write into Core, so the runner validates and writes each role's output itself. Since that rework the command-line orchestrator is the proven path. A full pass of the workflow runner has not been recorded again.
+
+The scope guard detects after the edit instead of blocking it. A better version would refuse the write, and that is a harder problem than it sounds inside an editor tool. The lock has no heartbeat and no cross-host story. The agent charters still carry a line in their metadata saying they are "not wired for live dispatch yet." That was true when written and is stale now. The agents are dispatched as registered subagents, or by injecting the charter verbatim when the harness lacks them. And the repository has not had a commit since late June, because since then I have been using the process rather than building the tool. That is a fine reason, and it also means the tool has not moved since June.
+
+If I were starting today I would put the human stop in on day one and keep it there longer than feels necessary. Everything else here follows from deciding what I could not take back.
+
+If you are setting the line for agents in a codebase that matters, I can help you draw it and enforce it. If you are deciding whether to let me build in yours, this is the process your code would go through, and [Work With Me](/work-with-me) is where to ask about it.
+
+### References
+
+- Anthropic, [Building effective agents](https://www.anthropic.com/research/building-effective-agents), the workflows-versus-agents framing this piece pushes further toward reversibility.
+- Claude Code documentation, [Hooks reference](https://docs.claude.com/en/docs/claude-code/hooks), the pre-tool-call mechanism the permissions hook relies on.
+- Simon Willison, [Here's how I use LLMs to help me write code](https://simonwillison.net/2025/Mar/11/using-llms-for-code/), the public conversation this article joins.
+
+<RelatedContent
+  items={[
+    {
+      path: '/work/accrulith',
+      title:
+        'Accrulith — An Engine That Acknowledges Nothing It Has Not Committed',
+      type: 'case-study',
+    },
+    {
+      path: '/writing/using-ai-in-real-products',
+      title: 'Using AI in Real Products, Not Just Demos',
+      type: 'article',
+    },
+    {
+      path: '/work/chimera',
+      title:
+        'Project Chimera — Building an Editorial System Where Every Sentence Is Accountable',
+      type: 'case-study',
+    },
+  ]}
+/>

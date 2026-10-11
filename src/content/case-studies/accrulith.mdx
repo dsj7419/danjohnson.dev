@@ -1,0 +1,316 @@
+---
+title: 'Accrulith — An Engine That Acknowledges Nothing It Has Not Committed'
+subtitle: 'A headless, deterministic engine for idle games, built to prove one rule every system that moves value needs: never acknowledge what is not already committed.'
+description: 'An engine for idle games whose real subject is the oldest problem in payments and webhooks: a request that arrives twice must take effect once, even if the server crashes in between. Ack-after-commit persistence, two-phase idempotency, a compiler-enforced pure core, and a signed tag behind every sprint.'
+date: '2026-10-11'
+tags:
+  - deterministic-core
+  - server-authoritative
+  - idempotency
+  - go
+  - systems-architecture
+  - ai-assisted-engineering
+featured: true
+draft: false
+role: 'Sole engineer; AI agents under a governed ticket process'
+organization: 'Internal Product'
+duration: 'May–June 2026, about six weeks part-time, plus a September toolchain patch'
+teamSize: '1 engineer, with AI agents behind two blind review gates'
+stack:
+  - Go 1.26
+  - SQLite (modernc, pure Go)
+  - WebSocket (coder/websocket)
+  - golangci-lint + depguard
+  - go/ast static analyzer
+  - goleak + race detector
+  - Task + GitHub Actions
+  - TypeScript SDK (Node 22, zero runtime dependencies)
+outcome: 'The Slice 0 command path is proven end to end: within its stated bounds, a crash between commit and acknowledgement cannot double-award, and fifteen signed tags trace how it got there.'
+metrics:
+  - label: 'Signed release tags'
+    value: '15'
+  - label: 'Direct runtime dependencies'
+    value: '3'
+  - label: 'Test code to production code'
+    value: '2.1 : 1'
+  - label: 'Build time, evenings and weekends'
+    value: '6 weeks'
+related:
+  - '/writing/four-packages-that-cannot-know-the-time'
+  - '/work/restorative-craft'
+  - '/writing/how-i-let-an-ai-write-code-i-will-ship'
+  - '/work/forges-of-karinth'
+---
+
+import { Callout } from '@/components/blocks/callout'
+import { DiagramWrapper } from '@/components/blocks/diagram-wrapper'
+import { RelatedContent } from '@/components/blocks/related-content'
+
+## Overview
+
+Accrulith is a headless, server-authoritative engine for idle games. It owns simulation, state, synchronization and persistence. Clients render what it sends.
+
+It exists because [Forges of Karinth](/work/forges-of-karinth) taught me that a deterministic game core is worth building once and reusing. Karinth proved the rules in TypeScript inside one product. Accrulith moves them into a Go engine, with the compiler and CI enforcing them instead of whoever remembers.
+
+The proving scope is one reference game, Miner Loop: one resource, one generator, one upgrade, one click action, three commands. It exists to validate the engine, not to be a product. Two of the engine's four protected package roots, `generators` and `upgrades`, are still empty fences reserved for future domain logic. The gates protect them anyway. The repository is private, so I excerpt from it here and do not link it.
+
+<Callout variant="warning" title="Status, in the project's own words">
+  Accrulith is built with production-grade discipline and is not a finished
+  product. It runs as a single process on a loopback-only development listener
+  with no authentication — a proving ground, not a service. The README says it
+  plainly:{' '}
+  <strong>
+    not production-ready, not protocol-ready, not multiplayer-ready, not
+    distributed-ready, not auth-ready, not TLS-ready
+  </strong>
+  . Every capability claim below is true within those bounds and backed by a
+  test. I lead with this because a game server that double-awards once has no
+  reputation left to protect.
+</Callout>
+
+## The Problem
+
+An idle game is a ledger with a theme. Every interesting failure is an accounting failure — a purchase that applies twice, a balance that drifts between client and server, an offline-progress calculation that depends on which machine ran it, a retry after a dropped connection that awards the thing again. Players notice, and some of them exploit.
+
+The failure that organized the design is the crash between commit and acknowledgement. The server applies a command, writes the result, and dies before the acknowledgement leaves the socket. The client, reasonably, resends. Now the server has to decide whether this is a new purchase or the old one coming back — and it has to decide correctly every time, after a restart, with a cold cache, under concurrent load from other players.
+
+Nothing about this is specific to games. A payment webhook that arrives twice, a booking confirmation that retries after a timeout, a form submitted again when the connection drops — each is the same question. Is this new, or is this the old one coming back? The answer has to be right every time, including after a restart.
+
+The usual defence is a convention: "always check the idempotency key," "never send the ack early." Conventions last until the second contributor. I wanted the ordering to be something a reviewer verifies by reading one function in `committer.go` and one named test.
+
+<Callout variant="insight" title="The deeper problem">
+  If the server trusts a client-supplied hash, timestamp or revision number, it
+  is not authoritative. Accrulith recomputes all three from the command it
+  decoded and ignores what the client sent.
+</Callout>
+
+## How it was built
+
+AI is not inside the engine. AI agents wrote most of it, under a process I designed so that I could trust the output without reading every line twice.
+
+Every change is one ticket with an explicit list of files the agent may touch. The agent writes the failing test first, then the code. Two independent verifier agents then review. One checks each acceptance criterion against evidence in the repository and is told that "looks good" is an invalid verdict. The other checks only that the diff stayed inside the fence and is forbidden from forming opinions about quality. A project-manager role passes, corrects or escalates. Nothing is committed until I have read the diff, and every sprint closes with a signed, annotated tag.
+
+For the first five sprints that process ran by hand. From June, the verifier roles were dispatched as subagents using the charters from [ForgeGate](/writing/how-i-let-an-ai-write-code-i-will-ship), the tool I built to mechanize the same loop. ForgeGate's orchestrator, its git hook and its decision ledger were never run against Accrulith — the tool was kept on its own track until it was mature enough to trust with a repository I cared about. That ordering matters: the engine is evidence for the process, not for the tool.
+
+After most sprints I pointed a multi-agent audit swarm built with my own tooling at the repository and used its findings to drive a hardening pass. The latest run, in mid-June, graded the engine with zero Critical findings and ten of twelve dimensions at its top tier. The two that were not were Go idioms and documentation. I report that for what it is — an audit I ran myself, with a tool I built, which is useful as a loop and not as independent validation. The findings it produced were real, including the inert half of the determinism gate described in the companion article, and the hardening tags that followed each pass are where the fixes live.
+
+## Constraints
+
+- **Determinism across machines.** The same state, command and context must produce byte-identical output on a Windows laptop, an Ubuntu CI runner, and any Go version in the supported range. No floats, no clocks, no goroutines, no map-order dependence in the core.
+- **Exactly-once effect under at-least-once delivery.** Clients will resend. The engine must award once and acknowledge once, including across a crash.
+- **One engineer, part-time.** Six weeks of evenings and weekends in May and June. Every mechanism had to be small enough to audit in an afternoon.
+- **No cgo on the development box.** The Windows machine has no C toolchain, which ruled out the most common SQLite driver before a line was written.
+- **Bounded scope, stated out loud.** Prestige, inventory, combat, guilds, leaderboards, Postgres, Redis, a binary protocol and engine SDKs are all future work. If a change needed any of them, it was out of scope by definition.
+
+## Approach
+
+Four principles.
+
+**A pure core, held in place by tooling.** Four package roots compute transitions and nothing else. A `depguard` deny-list, a `go/ast` analyzer and a test that checks the gate itself keep I/O, time, floats, goroutines and output-affecting map iteration out of them. The full story is in [Four Packages That Are Not Allowed to Know What Time It Is](/writing/four-packages-that-cannot-know-the-time).
+
+**Money moves through one door.** Player balances live in unexported maps inside the kernel's state package, so no other package can mutate one in place. The only way to change a balance is an exported copy-on-write constructor that returns a fresh state, and its only caller is the economy ledger. A test pins that routing.
+
+**Acknowledge after commit, catch duplicates twice.** Snapshot, event-journal row and idempotency record are written in one SQLite transaction. No success is acknowledged before that transaction commits. A duplicate command is caught cheaply before any work — by a per-actor cache and a durable read — and authoritatively inside the transaction by a uniqueness constraint. In plain terms: the engine never tells the player a purchase went through until the purchase is already on disk, and it recognizes the same request coming back, cheaply first and authoritatively second.
+
+**Every claim maps to a test.** A proof matrix maps each architectural claim to a concrete, blocking test, and it is the closeout gate for the slice. A meta-test that checks the matrix against the tree is still on the list.
+
+## Architecture
+
+The engine is two concentric rings, and the boundary between them is mechanical. Dependencies point inward. The protected core never imports the shell.
+
+<DiagramWrapper title="Command path, ack after commit" caption="One command's path through the engine. The transport decodes and caps the frame; the protocol layer binds errors to a stable taxonomy; the per-player actor serializes commands, checks for duplicates, and calls the pure kernel; the committer writes three rows in one SQLite transaction. The acknowledgement is the last arrow, and it does not exist until the transaction has committed. Green: deterministic core. Orange: network edge. Gray: persistence.">
+  <svg viewBox="0 0 800 440" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="accr-title accr-desc" className="w-full max-w-2xl text-(--color-text)">
+    <title id="accr-title">Accrulith command path with acknowledgement after commit</title>
+    <desc id="accr-desc">A client sends a command to the transport, which passes it to the protocol codec, then to a per-player actor. The actor checks a cache and a durable idempotency read, calls the pure kernel, and hands the result to a committer that writes snapshot, event and idempotency rows in one SQLite transaction. Only after the commit does an acknowledgement return along the same path to the client.</desc>
+    <defs>
+      <marker id="accr-arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L9,3 z" fill="currentColor" opacity="0.55" />
+      </marker>
+    </defs>
+
+    <rect x="20" y="60" width="120" height="56" rx="6" fill="rgb(99 102 241 / 0.1)" stroke="rgb(99 102 241 / 0.6)" strokeWidth="1.5" />
+    <text x="80" y="84" textAnchor="middle" fill="currentColor" fontSize="12" fontWeight="600">client</text>
+    <text x="80" y="101" textAnchor="middle" fill="currentColor" fontSize="10" opacity="0.65" fontFamily="ui-monospace, monospace">UUIDv7 command id</text>
+
+    <rect x="180" y="60" width="130" height="56" rx="6" fill="rgb(249 115 22 / 0.08)" stroke="rgb(249 115 22 / 0.6)" strokeWidth="1.5" />
+    <text x="245" y="84" textAnchor="middle" fill="currentColor" fontSize="12" fontWeight="600">transport</text>
+    <text x="245" y="101" textAnchor="middle" fill="currentColor" fontSize="10" opacity="0.65" fontFamily="ui-monospace, monospace">64 KiB · depth 32 caps</text>
+
+    <rect x="350" y="60" width="130" height="56" rx="6" fill="rgb(249 115 22 / 0.08)" stroke="rgb(249 115 22 / 0.6)" strokeWidth="1.5" />
+    <text x="415" y="84" textAnchor="middle" fill="currentColor" fontSize="12" fontWeight="600">protocol</text>
+    <text x="415" y="101" textAnchor="middle" fill="currentColor" fontSize="10" opacity="0.65" fontFamily="ui-monospace, monospace">20 typed error codes</text>
+
+    <rect x="520" y="60" width="130" height="56" rx="6" fill="rgb(249 115 22 / 0.08)" stroke="rgb(249 115 22 / 0.6)" strokeWidth="1.5" />
+    <text x="585" y="84" textAnchor="middle" fill="currentColor" fontSize="12" fontWeight="600">actor</text>
+    <text x="585" y="101" textAnchor="middle" fill="currentColor" fontSize="10" opacity="0.65" fontFamily="ui-monospace, monospace">one per player · queue 128</text>
+
+    <line x1="140" y1="88" x2="178" y2="88" stroke="currentColor" strokeWidth="1.2" opacity="0.5" markerEnd="url(#accr-arrow)" />
+    <line x1="310" y1="88" x2="348" y2="88" stroke="currentColor" strokeWidth="1.2" opacity="0.5" markerEnd="url(#accr-arrow)" />
+    <line x1="480" y1="88" x2="518" y2="88" stroke="currentColor" strokeWidth="1.2" opacity="0.5" markerEnd="url(#accr-arrow)" />
+
+    <rect x="520" y="150" width="260" height="60" rx="6" fill="rgb(107 114 128 / 0.08)" stroke="rgb(107 114 128 / 0.5)" strokeWidth="1.5" strokeDasharray="4 3" />
+    <text x="650" y="172" textAnchor="middle" fill="currentColor" fontSize="12" fontWeight="600">phase 1: is this a duplicate?</text>
+    <text x="650" y="192" textAnchor="middle" fill="currentColor" fontSize="10" opacity="0.65" fontFamily="ui-monospace, monospace">per-actor LRU → durable read → replay or conflict</text>
+    <line x1="585" y1="116" x2="585" y2="148" stroke="currentColor" strokeWidth="1.2" opacity="0.5" markerEnd="url(#accr-arrow)" />
+
+    <rect x="520" y="240" width="260" height="60" rx="6" fill="rgb(16 185 129 / 0.12)" stroke="rgb(16 185 129 / 0.7)" strokeWidth="1.5" />
+    <text x="650" y="262" textAnchor="middle" fill="currentColor" fontSize="12" fontWeight="600">kernel.ApplyCommand</text>
+    <text x="650" y="282" textAnchor="middle" fill="currentColor" fontSize="10" opacity="0.65" fontFamily="ui-monospace, monospace">pure · integer-only · ledger is the only money path</text>
+    <line x1="650" y1="210" x2="650" y2="238" stroke="currentColor" strokeWidth="1.2" opacity="0.5" markerEnd="url(#accr-arrow)" />
+    <text x="700" y="229" fill="currentColor" fontSize="10" opacity="0.6" fontFamily="ui-monospace, monospace">miss</text>
+
+    <rect x="200" y="330" width="580" height="86" rx="6" fill="rgb(107 114 128 / 0.1)" stroke="rgb(107 114 128 / 0.6)" strokeWidth="1.5" />
+    <text x="490" y="354" textAnchor="middle" fill="currentColor" fontSize="12" fontWeight="600">committer · one SQLite transaction</text>
+    <text x="490" y="374" textAnchor="middle" fill="currentColor" fontSize="10" opacity="0.7" fontFamily="ui-monospace, monospace">1 snapshot (compare-and-swap on revision) → 2 event-journal row → 3 idempotency row, key (player, command)</text>
+    <text x="490" y="396" textAnchor="middle" fill="currentColor" fontSize="10" opacity="0.7" fontFamily="ui-monospace, monospace">phase 2: a duplicate key rolls all three back, re-reads, replays or conflicts</text>
+    <line x1="650" y1="300" x2="650" y2="328" stroke="currentColor" strokeWidth="1.2" opacity="0.5" markerEnd="url(#accr-arrow)" />
+
+    <path d="M 200 373 L 80 373 L 80 118" fill="none" stroke="rgb(16 185 129 / 0.9)" strokeWidth="1.8" markerEnd="url(#accr-arrow)" />
+    <text x="92" y="250" fill="currentColor" fontSize="11" fontWeight="600" opacity="0.85">ack, only after commit</text>
+    <text x="92" y="266" fill="currentColor" fontSize="10" opacity="0.6" fontFamily="ui-monospace, monospace">crash here = safe; resend replays</text>
+
+  </svg>
+</DiagramWrapper>
+
+The shell is ordinary Go. The transport is a WebSocket listener that caps frame size and JSON depth before decoding. The protocol layer is a strict codec and a twenty-code error taxonomy, each code carrying whether it is retryable. The runtime gives every loaded player one goroutine and a bounded queue, so same-player commands serialize and cross-player commands run concurrently. Persistence is SQLite behind a pure-Go driver with the pool held to a single connection.
+
+## Engineering Challenges
+
+### Making the ordering unforgeable
+
+The commit order is eight steps, and the acknowledgement is step eight. Three decisions make it hard to violate. The actor does not advance its in-memory state until the committer returns success. The committer owns the transaction internally, so the runtime never sees a transaction handle it could misuse. And the durable operations run on a background context decoupled from the caller's request context, because a commit that has begun must complete even if the client has already given up waiting.
+
+That last one is the detail that is easy to get wrong. If the commit shares the request's context and the client times out mid-transaction, the cancellation can abort a write the client will later resend — and the server has produced the double-award case itself.
+
+### Proving a rollback that could have been vacuous
+
+The first draft of the rollback test seeded nothing. It committed a duplicate, observed that the snapshot was unchanged and no event was written, and passed. It would also have passed against an implementation that never wrote anything at all.
+
+The committed version pre-seeds a snapshot at revision one and one journal row, then submits a command whose compare-and-swap would succeed and whose state would advance the revision to two. Only the idempotency insert collides. The post-conditions — revision still one, exactly one journal row, stored record byte-identical — can only hold if the transaction rolled the staged writes back. An implementation that leaves any partial side effect fails it, and it runs against both the SQLite store and the in-memory one. It is the test I point to first when someone asks what "ack after commit" guarantees.
+
+### Finding out the replay was lying
+
+The audit after sprint seven found a bug every test had missed. When a duplicate command was replayed from the stored record, the acknowledgement reported revision zero instead of the committed revision. Nothing was double-awarded; the client was told a revision that did not exist. Underneath it was a worse one: the kernel had not been advancing the revision at all, so the compare-and-swap on the snapshot had never been exercised. One hardening pass fixed both. No test had asked what a replayed ack says — only whether it double-awards.
+
+### Keeping goroutines honest
+
+One goroutine per player is a simple model with a classic failure: leaks. Every lifecycle test runs under `goleak`, and the runtime is proven leak-free under a hundred concurrent submissions and a thousand randomized ones, with the race detector on in CI. Panic containment sits at every boundary, so a panicking command neither commits nor caches and the actor fails closed rather than wedging.
+
+## Decisions & Tradeoffs
+
+### 1. Ack after commit and two-phase idempotency, over a single check
+
+Alternatives considered: one idempotency check at the edge before the work; one check inside the database only. The first is cheap but cold after a restart and bypassable under cross-process races. The second is authoritative but costs a transaction for every duplicate, including the trivially common immediate resend. I chose both, in that order. A per-actor cache and a durable read catch the common case before the kernel runs. The `(player_id, command_id)` primary key inside the commit transaction catches everything else and rolls the transaction back when it fires.
+
+The committer is thirty lines. The reason the idempotency insert goes last is visible in it:
+
+```go title="internal/persistence/committer.go (excerpt)"
+err := c.store.withTx(ctx, func(tx *sql.Tx) error {
+	// ADR-0003 commit order: snapshot CAS -> event append -> idempotency insert.
+	if err := savePlayerTx(ctx, tx, req.NextState, req.ExpectedRevision, now); err != nil {
+		return err // stale CAS -> ErrStaleRevision; rolls back the (empty-so-far) tx
+	}
+	// Slice-0 event journal: an empty, opaque payload (no domain events).
+	if _, err := appendEventTx(ctx, tx, req.PlayerID, req.CommandID, committed, nil, now); err != nil {
+		return err
+	}
+	if err := saveIdempotencyTx(ctx, tx, req.PlayerID, req.CommandID, req.PayloadHash, req.Result, now); err != nil {
+		if isUniqueViolation(err) {
+			collision = true // roll back the snapshot + event staged above
+		}
+		return err
+	}
+	return nil
+})
+
+if collision {
+	return c.resolveCollision(ctx, req)
+}
+```
+
+Replay versus conflict is decided by a payload hash the server recomputes from the command it decoded. The client's hash, if it sends one, is ignored rather than validated. Same id and same hash is a retry and gets the stored result. Same id and a different payload is a conflict and gets a typed error, because a client that reuses an id for a different command is either buggy or hostile, and the engine does not guess which.
+
+That rule — same id and same hash is a retry, same id and a different payload is a conflict — is the one [Restorative Craft](/work/restorative-craft)'s loyalty engine already applies to Acuity's duplicate webhooks, where a retried appointment-completed event would otherwise award points twice. There it lives in one handler. Here it is a property of the commit path, which is what an engine is for.
+
+**Tradeoff accepted:** in a single-process engine the second phase defends a race the first phase cannot yet produce. Its value today is structural, not demonstrated. I built it anyway because the cost is one uniqueness constraint and the alternative is discovering the gap during the first multi-process deployment.
+
+### 2. Pure-Go SQLite over the cgo driver
+
+Alternatives considered: the standard cgo-backed SQLite driver; Postgres from day one. The cgo driver failed to build on the Windows development machine, which has no C toolchain. That is a bad reason to pick a driver, but it exposed a better one: a dependency that cannot build identically on the laptop and in CI makes every test result conditional on the machine, and the engine exists to remove that condition. The pure-Go driver builds everywhere, keeps the dependency tree verifiable through the Go checksum database, and runs on a single-connection pool. Postgres is a future adapter behind the same runtime-owned interface.
+
+**Tradeoff accepted:** the pure-Go driver is slower than the C one. For a loopback engine with one connection it has not mattered, and there is no production number yet.
+
+### 3. Consumer-owned interfaces, so persistence depends on the runtime and never the reverse
+
+Alternatives considered: a persistence package that exports its own interfaces and a runtime that imports them — the shape most codebases drift into. I chose the opposite direction. The commit and idempotency-read interfaces are declared in the runtime package, which consumes them. The persistence package implements them and imports the runtime to name the types. The runtime never imports persistence and never sees `database/sql` or a transaction handle, and a `depguard` rule turns the reverse edge into a lint failure in CI.
+
+That is the decision that makes a Postgres adapter, or an in-memory adapter for tests, a pure addition. The in-memory adapter already exists and runs the same contract tests as SQLite. The rollback proof above runs against both.
+
+### 4. An `int64` behind a seam, over big numbers now
+
+Alternatives considered: arbitrary-precision integers from the start; a mantissa-and-exponent representation; raw `int64` everywhere. Idle games eventually need balances far beyond `int64`, and I did not want to pay for that before Miner Loop needs it. I also did not want raw `int64` leaking across every contract so that the eventual change touches a hundred call sites. The compromise is a single kernel-owned amount type with an unexported field. Construction rejects negatives, arithmetic returns typed overflow errors, and the only escape hatch to the primitive is an explicit method used at serialization boundaries. Today it is backed by `int64`. The day it is not, a handful of files at the serialization and content boundaries change, and nothing in the kernel's arithmetic does.
+
+**Tradeoff accepted:** the tier ladder above `int64` is designed and not built. It is a seam.
+
+### 5. Snapshot as truth, events deferred
+
+Alternatives considered: event sourcing with state rebuilt by replay; snapshot-only with no journal at all. I chose snapshot-authoritative recovery with a per-command journal row written in the same transaction, carrying an empty payload. The journal proves a total per-player order and makes the atomic three-write commit a single rollback unit, but nothing replays from it yet. A typed event payload and a replay reader are deferred to a future decision record gated on a concrete use case — and that deferral is itself recorded, so the transport sprint could not introduce an event shape through the back door.
+
+**Tradeoff accepted:** the journal and the idempotency table grow without bound today. Retention is a named future gate and a real operational cost for any long-lived deployment.
+
+## Security & Performance
+
+The security posture is bounded. The development listener binds literal loopback addresses only and refuses everything else before anything listens. There is no authentication and no TLS. Both are named preconditions for any non-loopback exposure, and a set of tests fails if someone flips the loopback guard without them. Within those bounds the edge is defensive. Frames are capped at 64 KiB and 32 levels of JSON depth before decoding. Unknown fields and version mismatches are rejected with typed errors. Session ids are server-issued UUIDv7 values, per-connection liveness and rate limits are configured, and panics are contained at every goroutine boundary.
+
+Supply chain is small on purpose. The server binary has three direct third-party dependencies — the SQLite driver, the WebSocket library and a UUID library — plus the SQLite driver's own pure-Go tree underneath, all pinned and checksum-verified. Linters live behind the Go tool directive. The analyzer's and the tests' dependencies are ordinary requirements the server binary never imports. The toolchain version is pinned and asserted in CI. Ten linters and two formatters run, including `gosec` and `errorlint`. When the four newest were enabled, the inventory was run uncapped, because golangci-lint's default of three same-issues hides duplicate findings.
+
+Performance work has been about allocation discipline rather than throughput. The canonical hash on the hot path allocates once, and an allocation-ceiling test fails if that changes. A fuzz target exercises the content registry in a lane outside the merge gate. I do not have a clean requests-per-second number and will not publish one until it is measured on a dedicated machine rather than a laptop running the race detector.
+
+## Outcome
+
+The Slice 0 command path is proven end to end through the reference game. A client connects over a loopback WebSocket, clicks a resource, buys a generator, buys an upgrade, disconnects, reconnects, and resends. The engine awards each purchase once and acknowledges each once. Within the stated bounds — one process, one connection, three commands — a crash between commit and acknowledgement cannot double-award, and the test that would catch it is named and blocking. Offline progress, which the slice also promises, is not built yet.
+
+- **Fifteen signed, annotated tags** in under six weeks, each created on a closeout merge as a gated step. The most recent one holds a dozen pull requests and zero changes to engine runtime behavior: documentation truth, test hygiene, a client toolchain lane and four newly enabled linters.
+- **Three direct runtime dependencies**, with the SQLite driver's pure-Go tree beneath them. Everything else is build-time or test-time and does not ship.
+- **About 26,000 lines of test Go against 12,900 lines of everything else**, a little over 2 : 1 by raw line count across the repository; 653 test functions. The race detector, `goleak` and the determinism analyzer gate merges. Fuzz and benchmark lanes run outside the gate.
+- **A TypeScript SDK with zero runtime dependencies** drives the real loopback listener through the complete Miner Loop sequence, proving the wire contract from the outside.
+- **Sixteen architecture decision records**, the later ones recording the alternatives they rejected, and a proof matrix that maps every behavioral claim to the test that enforces it.
+
+On a content site I would not write this much test code. On anything that moves balances I would not write less.
+
+## Reflection
+
+Karinth taught me the rules of deterministic simulation. Accrulith taught me to test the enforcement. Twice on this project a green check was checking nothing: a `depguard` glob that skipped `internal/kernel/*.go`, and a `determinism` build tag no test file carried. One of them is still inert at the time of writing. Both were found by asking the gate to prove it was pointed at the right thing, and "is the guardrail running on the files I think it is" is now a test case.
+
+What I would do differently: prove reuse earlier. The engine's thesis is that game content can change without the core changing, and Miner Loop is the only content that has ever run through it. The structurally different second game that would turn the thesis from a claim into a proof is the next milestone, and it should have been the second. I would also budget the retention and offline-progress gates into the first slice instead of leaving them as named futures. They are the two deferrals that will bite a real deployment first.
+
+What I would keep: one ticket at a time, two blind verifiers, a signed tag at every closeout, and a status paragraph at the top of the README that says what the engine is not. Each of them slowed the project down, and they are why I can hand the repository to a stranger with a list of what it guarantees.
+
+The client systems I build have the same shape — a payment, a booking, a webhook that will arrive twice — and the same rule applies: nothing is confirmed that is not already committed, and the guarantee is a named test rather than a person's memory. If that is the standard you want for the part of your product that cannot be wrong twice, [Work With Me](/work-with-me) is where to start.
+
+<RelatedContent
+  items={[
+    {
+      path: '/writing/four-packages-that-cannot-know-the-time',
+      title: 'Four Packages That Are Not Allowed to Know What Time It Is',
+      type: 'article',
+    },
+    {
+      path: '/work/restorative-craft',
+      title:
+        'Restorative Craft — Building a Digital Practice with Heart and Discipline',
+      type: 'case-study',
+    },
+    {
+      path: '/writing/how-i-let-an-ai-write-code-i-will-ship',
+      title: 'How I Let an AI Write Code I Will Ship',
+      type: 'article',
+    },
+    {
+      path: '/work/forges-of-karinth',
+      title:
+        'Forges of Karinth — Deterministic Simulation Engine with Provable Correctness',
+      type: 'case-study',
+    },
+  ]}
+/>

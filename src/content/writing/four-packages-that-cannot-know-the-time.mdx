@@ -1,0 +1,269 @@
+---
+title: 'Four Packages That Are Not Allowed to Know What Time It Is'
+description: 'A rule you have to remember is a wish; a rule that fails CI is a property. How Accrulith keeps clocks, floats and chance out of the code that computes balances, why anything that prices or scores needs the same discipline, and the check that turned out to be watching the wrong files.'
+date: '2026-10-11'
+tags:
+  - determinism
+  - go
+  - static-analysis
+  - architecture
+category: 'architecture'
+featured: true
+draft: false
+related:
+  - '/work/accrulith'
+  - '/work/forges-of-karinth'
+  - '/work/chimera'
+---
+
+import { Callout } from '@/components/blocks/callout'
+import { DiagramWrapper } from '@/components/blocks/diagram-wrapper'
+import { RelatedContent } from '@/components/blocks/related-content'
+
+There are four packages in Accrulith that are not allowed to know what time it is.
+
+They cannot import `time`. They cannot start a goroutine. They cannot hold a `float64`. They cannot range over a map in any way that reaches the output. Together they are the deterministic core of a game engine. Given the same state, the same command and the same context, they produce byte-identical results — on my Windows laptop, on the Ubuntu CI runner, and on whatever Go version ships next year.
+
+Outside a game, that property is what lets an invoice be recomputed a year later and match. It is what lets a bug be reproduced from a log instead of guessed at, and a disputed result be settled by running it again. Anything that computes money, scores or entitlements wants it. Most systems lose it by accident.
+
+The rule is not in a README. Three separate checks fail CI if any of it happens. A `depguard` deny-list guards the imports. A small `go/ast` walker reads every non-test file in the protected set looking for `go` statements and float type names. And one test exists whose only job is to prove the first two are looking at the right files.
+
+## Why a README is not enough
+
+I had already learned this once. [Forges of Karinth](/work/forges-of-karinth), the TypeScript engine that preceded Accrulith, enforces the same kind of boundary with an ESLint rule that bans `Math.random()` inside the engine package and a structural test that fails the build on illegal imports. Those two mechanisms held. They also taught me their limits — a lint rule only sees what you told it to look for, and an import test only sees imports.
+
+The failure mode is not malice. It is the first generator-rate formula. Someone needs a rate of 1.5 per second, `float64` is the obvious type, the code compiles, the tests pass on the machine that wrote them, and the determinism guarantee is now quietly conditional on CPU and Go version. Accrulith's numeric-strategy decision record says exactly this: without a hard ban, the first formula will use a float "because it is obvious," and the guarantee breaks silently somewhere else.
+
+That is the argument for the three layers. A rule every future contributor has to remember is a property of the contributors, not of the system.
+
+## The rule
+
+[Accrulith](/work/accrulith) is a headless, server-authoritative engine for idle and incremental games. Clients send commands; the server owns every number. The engine is organized as two rings. The outer ring is an ordinary Go service — a WebSocket transport, a protocol codec, a per-player actor runtime, SQLite persistence. The inner ring is four package roots that do nothing but compute transitions: `internal/kernel` with its `state`, `types` and `det` subpackages, plus `internal/modules/economy`, `generators` and `upgrades`. Two of them, `generators` and `upgrades`, are still empty fences reserved for future domain logic; the gate protects them anyway. A command and a state go in. A four-field result comes out — the next state, the ledger transactions, the events, and an error.
+
+<DiagramWrapper title="Two rings" caption="The impure shell owns I/O, clocks, networking, persistence and goroutines. The protected core computes transitions and nothing else. Dependencies point inward; the core imports none of the shell. Time and seed enter the core as plain integers inside a deterministic context value.">
+  <svg viewBox="0 0 760 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="rings-title rings-desc" className="w-full max-w-2xl text-(--color-text)">
+    <title id="rings-title">Accrulith's two-ring architecture</title>
+    <desc id="rings-desc">An outer rectangle labelled impure shell contains transport, protocol, runtime and persistence. Inside it, a green rectangle labelled protected deterministic core contains kernel, economy, generators and upgrades. Arrows point from the shell inward to the core; an arrow from the core to the shell is crossed out.</desc>
+    <defs>
+      <marker id="rings-arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L9,3 z" fill="currentColor" opacity="0.5" />
+      </marker>
+    </defs>
+
+    <rect x="20" y="20" width="720" height="360" rx="10" fill="rgb(249 115 22 / 0.04)" stroke="rgb(249 115 22 / 0.45)" strokeWidth="1" strokeDasharray="5 4" />
+    <text x="40" y="46" fill="currentColor" fontSize="11" opacity="0.55" fontFamily="ui-monospace, monospace">IMPURE SHELL — I/O, clock, network, DB, goroutines allowed</text>
+
+    <rect x="40" y="70" width="150" height="46" rx="6" fill="rgb(249 115 22 / 0.08)" stroke="rgb(249 115 22 / 0.6)" strokeWidth="1.5" />
+    <text x="115" y="90" textAnchor="middle" fill="currentColor" fontSize="12" fontWeight="600">transport</text>
+    <text x="115" y="106" textAnchor="middle" fill="currentColor" fontSize="10" opacity="0.65" fontFamily="ui-monospace, monospace">WebSocket, caps</text>
+
+    <rect x="40" y="134" width="150" height="46" rx="6" fill="rgb(249 115 22 / 0.08)" stroke="rgb(249 115 22 / 0.6)" strokeWidth="1.5" />
+    <text x="115" y="154" textAnchor="middle" fill="currentColor" fontSize="12" fontWeight="600">protocol</text>
+    <text x="115" y="170" textAnchor="middle" fill="currentColor" fontSize="10" opacity="0.65" fontFamily="ui-monospace, monospace">codec, 20 error codes</text>
+
+    <rect x="40" y="198" width="150" height="46" rx="6" fill="rgb(249 115 22 / 0.08)" stroke="rgb(249 115 22 / 0.6)" strokeWidth="1.5" />
+    <text x="115" y="218" textAnchor="middle" fill="currentColor" fontSize="12" fontWeight="600">runtime</text>
+    <text x="115" y="234" textAnchor="middle" fill="currentColor" fontSize="10" opacity="0.65" fontFamily="ui-monospace, monospace">one actor per player</text>
+
+    <rect x="40" y="262" width="150" height="46" rx="6" fill="rgb(107 114 128 / 0.1)" stroke="rgb(107 114 128 / 0.6)" strokeWidth="1.5" />
+    <text x="115" y="282" textAnchor="middle" fill="currentColor" fontSize="12" fontWeight="600">persistence</text>
+    <text x="115" y="298" textAnchor="middle" fill="currentColor" fontSize="10" opacity="0.65" fontFamily="ui-monospace, monospace">SQLite, one tx per command</text>
+
+    <rect x="280" y="70" width="440" height="270" rx="10" fill="rgb(16 185 129 / 0.06)" stroke="rgb(16 185 129 / 0.5)" strokeWidth="1.5" />
+    <text x="300" y="96" fill="currentColor" fontSize="11" opacity="0.6" fontFamily="ui-monospace, monospace">PROTECTED DETERMINISTIC CORE</text>
+    <text x="300" y="112" fill="currentColor" fontSize="10" opacity="0.5" fontFamily="ui-monospace, monospace">no I/O · no clock · no goroutines · no float · no output-affecting map order</text>
+
+    <rect x="300" y="130" width="190" height="56" rx="6" fill="rgb(16 185 129 / 0.12)" stroke="rgb(16 185 129 / 0.7)" strokeWidth="1.5" />
+    <text x="395" y="152" textAnchor="middle" fill="currentColor" fontSize="12" fontWeight="600">kernel</text>
+    <text x="395" y="170" textAnchor="middle" fill="currentColor" fontSize="10" opacity="0.65" fontFamily="ui-monospace, monospace">+ state · types · det</text>
+
+    <rect x="510" y="130" width="190" height="56" rx="6" fill="rgb(16 185 129 / 0.12)" stroke="rgb(16 185 129 / 0.7)" strokeWidth="1.5" />
+    <text x="605" y="152" textAnchor="middle" fill="currentColor" fontSize="12" fontWeight="600">modules/economy</text>
+    <text x="605" y="170" textAnchor="middle" fill="currentColor" fontSize="10" opacity="0.65" fontFamily="ui-monospace, monospace">the only path that moves money</text>
+
+    <rect x="300" y="210" width="190" height="56" rx="6" fill="rgb(16 185 129 / 0.08)" stroke="rgb(16 185 129 / 0.5)" strokeWidth="1.5" strokeDasharray="4 3" />
+    <text x="395" y="232" textAnchor="middle" fill="currentColor" fontSize="12" fontWeight="600">modules/generators</text>
+    <text x="395" y="250" textAnchor="middle" fill="currentColor" fontSize="10" opacity="0.65" fontFamily="ui-monospace, monospace">reserved boundary</text>
+
+    <rect x="510" y="210" width="190" height="56" rx="6" fill="rgb(16 185 129 / 0.08)" stroke="rgb(16 185 129 / 0.5)" strokeWidth="1.5" strokeDasharray="4 3" />
+    <text x="605" y="232" textAnchor="middle" fill="currentColor" fontSize="12" fontWeight="600">modules/upgrades</text>
+    <text x="605" y="250" textAnchor="middle" fill="currentColor" fontSize="10" opacity="0.65" fontFamily="ui-monospace, monospace">reserved boundary</text>
+
+    <text x="500" y="312" textAnchor="middle" fill="currentColor" fontSize="11" opacity="0.7" fontFamily="ui-monospace, monospace">ApplyCommand(state, command, context) → {`{NextState, Ledger, Events, Err}`}</text>
+
+    <line x1="190" y1="221" x2="298" y2="190" stroke="currentColor" strokeWidth="1.2" opacity="0.5" markerEnd="url(#rings-arrow)" />
+    <text x="236" y="196" fill="currentColor" fontSize="10" opacity="0.6" fontFamily="ui-monospace, monospace">calls</text>
+
+    <line x1="298" y1="240" x2="190" y2="240" stroke="currentColor" strokeWidth="1.2" opacity="0.25" strokeDasharray="3 3" />
+    <line x1="238" y1="230" x2="250" y2="250" stroke="rgb(239 68 68 / 0.8)" strokeWidth="2" />
+    <line x1="250" y1="230" x2="238" y2="250" stroke="rgb(239 68 68 / 0.8)" strokeWidth="2" />
+    <text x="236" y="266" fill="currentColor" fontSize="10" opacity="0.6" fontFamily="ui-monospace, monospace">never imports the shell</text>
+
+  </svg>
+</DiagramWrapper>
+
+"Pure" here has a precise meaning. Inside the core:
+
+- No I/O, no filesystem, no network, no logging.
+- No clock. Server time enters as an `int64` of Unix milliseconds inside a context value the runtime builds. Nothing in the core consumes it yet; when the first tick formula does, duration math will be integer subtraction.
+- No goroutines. The core is single-threaded by contract; concurrency lives in the runtime, one actor per player.
+- No floating point. Balances are `int64`. Rates are stored as thousandths per second, so a designer can express fractional output without the kernel touching a `float64`.
+- No map iteration that affects output. Go randomizes map order on purpose. If a loop over a map decides anything a player can see, it iterates over sorted keys.
+- No randomness, today. A seed field exists in the context so that a deterministic generator can be added later; nothing in the core consumes it yet.
+
+Every deterministic simulation ends up with some version of this list. The question is what it looks like six months later.
+
+The next three sections are the mechanics. If you are not going to read Go, the shape is this. One check watches what the code is allowed to use. One reads the code itself for the things the first cannot see. One checks that the first two are looking at the right files — and that last one is where the story is.
+
+## Layer 1: imports
+
+The first layer is `depguard`, run through `golangci-lint`. It is a deny-list of packages that files under the protected roots may not import. The interesting part is not the list but the reason attached to each entry, because the linter prints it at the point of failure:
+
+```yaml title=".golangci.yml (excerpt)"
+protected-set:
+  list-mode: lax
+  files:
+    - '**/internal/kernel/*.go'
+    - '**/internal/kernel/**/*.go'
+    - '**/internal/modules/economy/*.go'
+    - '**/internal/modules/economy/**/*.go'
+    # ... generators and upgrades, same pairing
+  deny:
+    - pkg: 'time'
+      desc: 'Forbidden in protected set; pass ServerTime through DeterministicContext (ADR-0008).'
+    - pkg: 'math/rand'
+      desc: 'Forbidden in protected set; use DeterministicContext.Seed-derived RNG (ADR-0008).'
+    - pkg: 'os'
+      desc: 'Forbidden in protected set (ADR-0001, ADR-0008).'
+    - pkg: 'database/sql'
+      desc: 'Forbidden in protected set (ADR-0001).'
+    - pkg: 'log/slog'
+      desc: 'Forbidden in protected set (ADR-0001).'
+    - pkg: '<module>/internal/runtime'
+      desc: 'Kernel must not depend on runtime; direction is one-way (ADR-0001).'
+```
+
+The full list also bans `math/rand/v2`, `runtime`, `unsafe`, `net`, `net/http`, `log`, `os/exec`, the persistence and protocol packages, and the reference game. A second rule does the same job one ring out, keeping the runtime free of `database/sql` and the SQLite driver so that persistence depends on the runtime and never the reverse.
+
+Notice the paired globs: each root appears as `*.go` and as `**/*.go`. Layer 3 is why.
+
+## Layer 2: syntax
+
+An import check cannot see a `float64` field, a `go` statement, or `time.Now()` reached through an alias. For those, the second layer parses every non-test file under the protected roots with the standard library's `go/ast` and walks the tree. The core of it is small enough to read in one sitting:
+
+```go title="tools/static-checks/main.go (excerpt)"
+func checkFloatGoStmt(f *ast.File, fset *token.FileSet) []Violation {
+	var violations []Violation
+	ast.Inspect(f, func(n ast.Node) bool {
+		switch x := n.(type) {
+		case *ast.Ident:
+			if forbiddenTypeIdents[x.Name] {
+				pos := fset.Position(x.Pos())
+				violations = append(violations, Violation{
+					File: pos.Filename, Line: pos.Line, Col: pos.Column,
+					Rule:    "float",
+					Message: fmt.Sprintf("forbidden type %q in protected package (ADR-0008)", x.Name),
+				})
+			}
+		case *ast.GoStmt:
+			pos := fset.Position(x.Pos())
+			violations = append(violations, Violation{
+				File: pos.Filename, Line: pos.Line, Col: pos.Column,
+				Rule:    "goroutine",
+				Message: "'go' statement forbidden in protected package (ADR-0008)",
+			})
+		}
+		return true
+	})
+	return violations
+}
+```
+
+`forbiddenTypeIdents` is `float32`, `float64`, `complex64`, `complex128`. The check is on identifiers, not resolved types, so it has a documented false positive — a field literally named `float32` — and a known false negative: a float reached through a named type from an allowed import never spells `float64` in the protected file. I accepted both because the check is twenty lines, needs no type information, runs on files that do not type-check yet, and `depguard` already closes the import side.
+
+`depguard` already refuses `import "time"`. The analyzer checks again because the check is cheap and a miss is not. It collects the local names a file uses for the `time` package, including `import t "time"`, and flags any selector expression that reaches through one of them. Run both and a violation is reported twice. That is fine. One of the two directions was misconfigured for months, and the next section is how I found out.
+
+### The heuristic nobody wants to write
+
+The last syntactic rule is the ugliest: map iteration. Go randomizes the order in which `range` visits a map. In a deterministic core, a loop that appends map values to a slice or writes them into a hash produces different output on every run.
+
+The rule for humans is simple — if a loop over a map affects output, collect the keys, sort them, iterate in that order. There is a small helper for it. The rule for the machine is harder, because "affects output" is a semantic question. The analyzer loads the protected packages with full type information, finds every `range` over a map, and flags it when the loop body passes a range variable into something that looks like output: a `Write`, `Print`, `Sprint`, `Append` or `Marshal` call. A loop that only counts entries is permitted, and the author marks it with one of two comments, `// non-output map iteration` or `// det:safe`, so a reviewer knows the choice was made rather than forgotten.
+
+It is a heuristic with false positives, and the fix for a false positive is one of two things: route through the sorted-keys helper, or add the comment. Both are visible in review. One more detail in it is worth carrying into any analyzer. If the type-checker fails to load a package — a proxy outage on the CI runner is the usual cause — the analyzer does not skip the package. It emits the load error as a violation. A partial scan that silently reports "no violations found" is worse than no scan, because it looks identical to a passing one.
+
+## Layer 3: the test that tests the gate
+
+A deny-list is only as good as its file matcher. `depguard` applies its rules to files matched by glob patterns, and when I first wrote the protected-set rule, every pattern ended in `**/*.go`. That reads as "every Go file under this directory." It is not what the glob library `depguard` uses means by it. In that library, the middle `**` must consume at least one path segment. A file sitting directly under `internal/kernel/` — `kernel.go`, with no subdirectory between it and the root — did not match. For those files, which include the kernel's own `ApplyCommand`, the deny list was never consulted.
+
+Nothing failed. The linter ran, the configuration was valid, CI was green. The boundary I had written down was being enforced for every file except the ones that mattered most.
+
+I found it when I wrote a test whose only purpose is to assert that the gate is pointed at the right files. The test parses `.golangci.yml` and takes a list of representative paths under each protected root — both directly under it and one subdirectory deep. It converts them to the absolute, slash-normalized form `depguard` matches against, and asserts that at least one of the rule's globs matches each:
+
+```go title="tools/depguard-coverage/coverage_test.go (excerpt)"
+var representativeBareProtectedPaths = []string{
+	"internal/kernel/kernel.go",
+	"internal/kernel/subdir/example.go",
+	"internal/modules/economy/apply.go",
+	"internal/modules/economy/subdir/example.go",
+	"internal/modules/generators/doc.go",
+	"internal/modules/generators/subdir/example.go",
+	"internal/modules/upgrades/doc.go",
+	"internal/modules/upgrades/subdir/example.go",
+}
+```
+
+The test was red on the first run. The fix was the paired globs you saw in layer 1 — one pattern for root-level files, one for nested files, for every protected root. The test has been green since, and it will go red again the day someone simplifies the configuration back to the obvious form.
+
+<Callout variant="insight">
+  The cheapest test in the repository is the one that asserts the expensive
+  tests are running on the files you think they are.
+</Callout>
+
+Behind the three layers sit the behavioral tests the layers exist to protect. The same command applied a hundred times to the same state must produce structurally identical results, and the ledger's `Apply`, the snapshot view and the kernel dispatcher are each run under fifty permutations of map insertion order. Those tests are the claim; the three layers stop it from decaying between runs.
+
+## What it costs
+
+Idiomatic Go becomes slightly less idiomatic inside the core. `for k, v := range m` is unsafe when the body touches output, so the helper that returns sorted keys shows up everywhere. The `math` package's functions operate on `float64`, so the core cannot call them; if the engine ever needs a square root it will get an integer one, with a short note on why. Fractional rates are integers with a unit suffix, so that when production math lands, the one integer division that converts them to whole units happens at a single boundary.
+
+The analyzer adds a small fixed cost to every CI run. The coverage test adds a glob library and a YAML parser at test time only. Reviewers have to learn two comment conventions. None of this is a serious tax, but it is a permanent one, and it only pays off if the core's output must not depend on where or when it runs. Here it must.
+
+If I were building this inside a client's codebase, this is the cost I would put in the estimate: a few seconds of CI and two review conventions. What it buys is a guarantee that does not depend on who is maintaining the code in two years.
+
+## What was wrong anyway
+
+The gate has a second half, and it was empty.
+
+The CI task that runs the determinism checks does two things. It runs the analyzer described above, and it runs `go test -tags=determinism ./...` — the idea being that tests behind a build tag could do slower, deeper determinism checks without running on every ordinary test invocation. It is a sensible design. When I ran a multi-agent audit over the repository with my own tooling in June, one of the findings was that no test file in the repository carries the `determinism` build tag. That half of the task selects nothing and passes instantly. It has passed, green, on every CI run since the day it was written.
+
+As of this writing it is still inert. The real determinism tests live in the ordinary suite and run on every invocation, so the property is covered; what is wrong is that a step in the pipeline reads as coverage and provides none. The fix is small — seed a tagged corpus, or delete the invocation and rename the task. I am recording it before fixing it because it is the glob bug one layer up: a step that reads as coverage and was never checked.
+
+## A portable version
+
+None of this is specific to Go. The nearest client example on this site is Chimera's first verification gate — a pure-compute pass that checks citation coverage and integrity before any model is called. The expensive, fuzzy judgment only runs on drafts the cheap check has already passed. A gate like that is only worth having if it cannot drift, and keeping clocks, floats and map order out of it is how it stays that way.
+
+In TypeScript, which is where Karinth and Chimera live, the three layers map cleanly. Layer one is `no-restricted-imports` and `no-restricted-globals` in ESLint, banning `Date`, `Math.random`, `performance.now`, timers and `crypto` inside the protected directory. Layer two is a syntax-level rule — a typescript-eslint rule or a short `ts-morph` script — for the things imports cannot see. An `await` on a wall-clock promise. A `for...in` over an object whose key order reaches the output. A `Math.pow` where you meant an integer helper. Layer three is a test that runs `eslint --print-config` against a representative file under each protected directory and asserts the restricted rules are active for it. Karinth has the first layer and a structural import test. After Accrulith, the other two are on its list.
+
+If part of your system has to give the same answer every time — a price, a balance, a score, a verdict — the hard part is not writing that rule. It is keeping it true after launch, when the people who remember why are gone. That is the work described here, and [Work With Me](/work-with-me) is where to start the conversation.
+
+<RelatedContent
+  items={[
+    {
+      path: '/work/accrulith',
+      title:
+        'Accrulith — An Engine That Acknowledges Nothing It Has Not Committed',
+      type: 'case-study',
+    },
+    {
+      path: '/work/forges-of-karinth',
+      title:
+        'Forges of Karinth — Deterministic Simulation Engine with Provable Correctness',
+      type: 'case-study',
+    },
+    {
+      path: '/work/chimera',
+      title:
+        'Project Chimera — Building an Editorial System Where Every Sentence Is Accountable',
+      type: 'case-study',
+    },
+  ]}
+/>
