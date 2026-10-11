@@ -8,7 +8,8 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Cancel superseded runs on PR branches only; every push to main must finish.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   quality:
@@ -21,7 +22,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: .nvmrc
           cache: pnpm
 
       - name: Install dependencies
@@ -43,8 +44,8 @@ jobs:
       - name: Type check
         run: pnpm typecheck
 
-      - name: Unit tests
-        run: pnpm test:run
+      - name: Unit tests with coverage thresholds
+        run: pnpm test:coverage
 
       - name: Production build
         run: pnpm build
