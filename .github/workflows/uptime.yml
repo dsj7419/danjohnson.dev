@@ -1,0 +1,65 @@
+name: Uptime
+
+# A free external check that needs no extra accounts. A failed run emails the repository owner
+# (GitHub notifies the user who last changed this schedule). Every three hours keeps a private
+# repository well inside the free Actions minutes; run it by hand from the Actions tab any time.
+on:
+  schedule:
+    - cron: '17 */3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: uptime
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: Production health
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SITE: https://danjohnson.dev
+    steps:
+      - name: Pages answer 200
+        run: |
+          set -euo pipefail
+          for path in / /work /writing /work-with-me /privacy /sitemap.xml /writing/feed.xml /opengraph-image; do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' --retry 2 --retry-delay 10 "$SITE$path")
+            echo "$path -> $code"
+            [ "$code" = "200" ] || { echo "::error::$path returned $code"; exit 1; }
+          done
+
+      - name: Homepage renders the site, not an error page
+        run: |
+          set -euo pipefail
+          curl -sS --retry 2 "$SITE/" | grep -q 'Work With Me' || { echo "::error::homepage content missing"; exit 1; }
+
+      - name: Contact function is deployed (GET is 405, cross-site POST is 403)
+        run: |
+          set -euo pipefail
+          get=$(curl -sS -o /dev/null -w '%{http_code}' "$SITE/api/contact")
+          post=$(curl -sS -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' \
+            -H 'Origin: https://uptime-check.invalid' --data '{}' "$SITE/api/contact")
+          echo "GET -> $get, cross-site POST -> $post"
+          [ "$get" = "405" ] && [ "$post" = "403" ] || { echo "::error::contact route unhealthy"; exit 1; }
+
+      - name: TLS certificate has at least 14 days left
+        run: |
+          set -euo pipefail
+          end=$(echo | openssl s_client -connect danjohnson.dev:443 -servername danjohnson.dev 2>/dev/null \
+            | openssl x509 -noout -enddate | cut -d= -f2)
+          days=$(( ( $(date -d "$end" +%s) - $(date +%s) ) / 86400 ))
+          echo "certificate expires $end ($days days)"
+          [ "$days" -ge 14 ] || { echo "::error::certificate expires in $days days"; exit 1; }
+
+      - name: Mail DNS is intact (forwarding MX, SPF, DMARC, Resend DKIM)
+        run: |
+          set -euo pipefail
+          dig +short MX danjohnson.dev | grep -q 'fwd1.porkbun.com' || { echo "::error::forwarding MX missing"; exit 1; }
+          dig +short TXT danjohnson.dev | grep -q 'v=spf1' || { echo "::error::apex SPF missing"; exit 1; }
+          dig +short TXT _dmarc.danjohnson.dev | grep -q 'p=quarantine' || { echo "::error::DMARC policy changed"; exit 1; }
+          dig +short TXT resend._domainkey.danjohnson.dev | grep -q 'p=MIGf' || { echo "::error::Resend DKIM key missing"; exit 1; }
+          echo "mail DNS ok"
