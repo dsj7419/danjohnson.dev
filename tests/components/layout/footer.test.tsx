@@ -30,6 +30,14 @@ describe('Footer', () => {
     expect(link).toHaveAttribute('rel', 'noopener noreferrer')
   })
 
+  it('links to the public source repository in a new tab', () => {
+    render(<Footer />)
+    const link = screen.getByText('Source')
+    expect(link).toHaveAttribute('href', 'https://github.com/dsj7419/danjohnson.dev')
+    expect(link).toHaveAttribute('target', '_blank')
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+  })
+
   it('renders RSS link', () => {
     render(<Footer />)
     const link = screen.getByText('RSS')
