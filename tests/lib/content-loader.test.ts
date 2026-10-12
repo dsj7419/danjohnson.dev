@@ -87,6 +87,36 @@ describe('calculateReadingTime', () => {
   it('handles empty content', () => {
     expect(calculateReadingTime('')).toBe(1)
   })
+
+  describe('counts prose, not markup', () => {
+    const prose = Array.from({ length: 450 }, () => 'word').join(' ')
+    const svgAttributes = Array.from(
+      { length: 600 },
+      (_, i) => `<rect x="${String(i)}" y="0" width="10" height="10" />`,
+    ).join('\n')
+
+    it('ignores an inline SVG diagram', () => {
+      const content = `${prose}\n\n<figure>\n<svg viewBox="0 0 800 400">\n${svgAttributes}\n</svg>\n</figure>\n`
+      expect(calculateReadingTime(content)).toBe(2)
+    })
+
+    it('ignores import and export lines', () => {
+      const imports = Array.from({ length: 300 }, (_, i) => `import X${String(i)} from 'y'`).join(
+        '\n',
+      )
+      expect(calculateReadingTime(`${imports}\nexport const meta = {}\n\n${prose}`)).toBe(2)
+    })
+
+    it('keeps the words inside JSX components while dropping their attributes', () => {
+      const callout = `<Callout variant="note" title="Status">\n${prose}\n</Callout>`
+      expect(calculateReadingTime(callout)).toBe(2)
+    })
+
+    it('ignores MDX comments', () => {
+      const comment = `{/* ${Array.from({ length: 600 }, () => 'note').join(' ')} */}`
+      expect(calculateReadingTime(`${comment}\n${prose}`)).toBe(2)
+    })
+  })
 })
 
 describe('extractToc', () => {

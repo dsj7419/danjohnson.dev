@@ -51,8 +51,21 @@ function headingText(markdown: string): string {
   )
 }
 
+/**
+ * Reduces an MDX body to the words a reader actually reads: inline SVG diagrams, MDX comments,
+ * ESM import/export lines and JSX/HTML tags (with their attributes) are removed; the text
+ * between tags, code and prose all stay.
+ */
+function readableText(content: string): string {
+  return content
+    .replace(/<svg[\s\S]*?<\/svg>/gi, ' ')
+    .replace(/\{\/\*[\s\S]*?\*\/\}/g, ' ')
+    .replace(/^(?:import|export)\s.*$/gm, ' ')
+    .replace(/<\/?[A-Za-z][^>]*>/g, ' ')
+}
+
 export function calculateReadingTime(content: string): number {
-  const trimmed = content.trim()
+  const trimmed = readableText(content).trim()
   if (trimmed.length === 0) return 1
   const words = trimmed.split(/\s+/).length
   return Math.max(1, Math.round(words / WORDS_PER_MINUTE))
