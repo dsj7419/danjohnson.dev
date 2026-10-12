@@ -12,7 +12,12 @@ import {
   slugify,
 } from '@/lib/content'
 
-vi.mock('fs')
+// Vitest 4 no longer automocks the methods of a default-exported Node built-in, so the three
+// functions the loader uses are declared as mocks for both the default and named import shapes.
+vi.mock('fs', () => {
+  const mocked = { existsSync: vi.fn(), readdirSync: vi.fn(), readFileSync: vi.fn() }
+  return { default: mocked, ...mocked }
+})
 
 const validCaseStudyMdx = `---
 title: "Test Project"
