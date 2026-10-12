@@ -112,13 +112,13 @@ describe('POST /api/contact', () => {
       expect(notification.subject).toContain('Jane Smith')
     })
 
-    it('addresses the confirmation to the submitter with the live inbox as reply-to', async () => {
+    it('addresses the confirmation to the submitter with the domain address as reply-to', async () => {
       await post()
 
       const confirmation = sendArgs(1)
       expect(confirmation.from).toBe('Dan Johnson <dan@danjohnson.dev>')
       expect(confirmation.to).toBe('jane@example.com')
-      expect(confirmation.replyTo).toBe('inbox@example.com')
+      expect(confirmation.replyTo).toBe('dan@danjohnson.dev')
     })
 
     it('never echoes the submitted message in the confirmation', async () => {

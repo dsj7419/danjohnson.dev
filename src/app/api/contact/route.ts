@@ -151,9 +151,8 @@ export async function POST(request: Request) {
       .send({
         from: 'Dan Johnson <dan@danjohnson.dev>',
         to: parsed.data.email,
-        // The apex domain has no inbound mail (no MX record), so replies must go to the live inbox
-        // that receives notifications (devex-ops-015). Revisit when DNS forwarding exists.
-        replyTo: contactEmail,
+        // Replies go to the domain address; Porkbun forwards dan@ to the owner's inbox (MX since 2026-10-12).
+        replyTo: 'dan@danjohnson.dev',
         subject: confirmation.subject,
         html: confirmation.html,
         text: confirmation.text,

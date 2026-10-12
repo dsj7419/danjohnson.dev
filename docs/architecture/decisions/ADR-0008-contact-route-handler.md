@@ -1,7 +1,7 @@
 # ADR-0008: Contact Form via a Route Handler and Resend
 
 **Status:** Accepted
-**Date:** 2026-10-12 (records a decision made in April 2026; amended after the October review)
+**Date:** 2026-10-12 (records a decision made in April 2026; amended after the October review; amended 2026-10-12 when mail forwarding went live)
 
 ## Context
 
@@ -13,7 +13,7 @@ A single Route Handler, `POST /api/contact`, validates input with the shared Zod
 
 - The handler refuses anything that is not `application/json` sent from this site's origin (`Sec-Fetch-Site: same-origin`, or an `Origin` equal to the site URL or the request's own origin) before reading the body.
 - Non-object JSON returns 400 with empty field errors; schema failures return 400 with one message per field.
-- The confirmation carries no user text beyond the name, states the reply window, and sets `Reply-To` to the live inbox (the apex domain has no MX record).
+- The confirmation carries no user text beyond the name, states the reply window, and sets `Reply-To` to `dan@danjohnson.dev`, which Porkbun forwards to the owner's inbox.
 - Header values derived from user input pass through `sanitizeHeaderValue` (no CR/LF, control characters or angle brackets).
 - A failed confirmation is logged and does not fail the request; a failed notification returns 502.
 
@@ -28,4 +28,4 @@ A single Route Handler, `POST /api/contact`, validates input with the shared Zod
 
 - `tests/app/api/contact/route.test.ts` pins every branch, including the origin guard and header injection; the route is inside the coverage gate.
 - Inquiries live only in the owner's inbox. There is no store to query, export or lose; retention is described on `/privacy`.
-- If the apex domain gains inbound mail, the confirmation's `Reply-To` can move back to `dan@danjohnson.dev` (one line, covered by a route test).
+- Inbound mail depends on Porkbun forwarding (MX `fwd1`/`fwd2.porkbun.com`). If forwarding is ever removed, the confirmation's `Reply-To` must move to the `CONTACT_EMAIL` inbox in the same change.
