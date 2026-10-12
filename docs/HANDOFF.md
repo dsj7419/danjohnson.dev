@@ -267,12 +267,11 @@ What this means in practice:
 
 Identified by independent code review agents (April 2026) and re-checked in October 2026; tracked but not blocking:
 
-| Item                                                                         | Severity | Notes                                                                                                                                                                          |
-| ---------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `ContentEntry.content` field is phantom (`null as unknown as ComponentType`) | LOW      | Field exists in type but is never populated. Architectural decision: remove from type or make optional.                                                                        |
-| `color-scheme: light dark` may conflict with class-based dark toggle         | LOW      | Could cause scrollbar color mismatch. Needs visual verification.                                                                                                               |
-| CSP `unsafe-inline`                                                          | ACCEPTED | Hashes and nonces are not viable under static generation; reasoning in ADR-0010.                                                                                               |
-| Shiki `github-light` token contrast overrides applied                        | LOW      | Four tokens (`#D73A49`, `#E36209`, `#6A737D`, `#22863A`) overridden via CSS `!important` on `--shiki-light` to pass WCAG AA. Original theme colors fail AA even on pure white. |
+| Item                                                                 | Severity | Notes                                                                                                                                                                          |
+| -------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `color-scheme: light dark` may conflict with class-based dark toggle | LOW      | Could cause scrollbar color mismatch. Needs visual verification.                                                                                                               |
+| CSP `unsafe-inline`                                                  | ACCEPTED | Hashes and nonces are not viable under static generation; reasoning in ADR-0010.                                                                                               |
+| Shiki `github-light` token contrast overrides applied                | LOW      | Four tokens (`#D73A49`, `#E36209`, `#6A737D`, `#22863A`) overridden via CSS `!important` on `--shiki-light` to pass WCAG AA. Original theme colors fail AA even on pure white. |
 
 ---
 
