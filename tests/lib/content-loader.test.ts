@@ -230,6 +230,16 @@ describe('getAllCaseStudies', () => {
     expect(entries[0]?.slug).toBe('test-project')
   })
 
+  it('returns metadata only; routes import the compiled MDX component themselves', () => {
+    const entry = getAllCaseStudies()[0]
+    expect(entry && Object.keys(entry).sort()).toEqual([
+      'frontmatter',
+      'readingTime',
+      'slug',
+      'toc',
+    ])
+  })
+
   it('returns case studies with validated frontmatter', () => {
     const entries = getAllCaseStudies()
     expect(entries[0]?.frontmatter.title).toBe('Test Project')

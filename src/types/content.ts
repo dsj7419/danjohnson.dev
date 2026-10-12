@@ -1,4 +1,3 @@
-import type { ComponentType } from 'react'
 import { z } from 'zod'
 
 export const caseStudyFrontmatterSchema = z.object({
@@ -72,5 +71,4 @@ export type ContentEntry<T> = {
   frontmatter: T
   readingTime: number
   toc: TocEntry[]
-  content: ComponentType
 }

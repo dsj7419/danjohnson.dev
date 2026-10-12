@@ -124,7 +124,6 @@ function loadContentEntries<Output>(
         frontmatter: parsed.data,
         readingTime: calculateReadingTime(content),
         toc: extractToc(content),
-        content: null as unknown as React.ComponentType,
       }
     })
     .filter((entry) => {
