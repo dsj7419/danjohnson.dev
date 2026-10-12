@@ -65,7 +65,7 @@ The site is live at **https://danjohnson.dev** (Vercel; the repository is privat
 
 **Infrastructure:** per-page canonical and Open Graph metadata; build-time OG images (unknown slugs 404); sitemap, robots, RSS; JSON-LD; Vercel Web Analytics (cookieless; switched on in the Vercel dashboard); `POST /api/contact` with an origin guard, header sanitising and hashed-IP logging (ADR-0008, ADR-0009).
 
-**Quality gates (ADR-0012):** `main` accepts only pull requests with a passing `Quality Checks` run. CI audits production dependencies, lints type-aware with zero warnings, checks formatting and types, runs 445 tests across 41 files with coverage thresholds, and builds. A token-contrast test holds WCAG AA in both themes; axe reports zero violations on every route in both themes.
+**Quality gates (ADR-0012):** `main` accepts only pull requests with a passing `Quality Checks` run. CI audits production dependencies, lints type-aware with zero warnings, checks formatting and types, runs 446 tests across 41 files with coverage thresholds, and builds. A token-contrast test holds WCAG AA in both themes; axe 4.10.2 reports zero violations on all 17 production routes (including the 404) in both themes (2026-10-12).
 
 ### What's Next
 
@@ -74,7 +74,7 @@ Owner tasks, none of which can be done from the codebase:
 1. **Mail DNS (Porkbun).** Add MX forwarding for `dan@` and `hello@`, an SPF record for the apex, DMARC at `p=quarantine` with a `rua` address, and a CAA record. Then point the confirmation email's `Reply-To` back at `dan@danjohnson.dev` (one line in `src/app/api/contact/route.ts`, covered by a route test).
 2. **Vercel Web Analytics toggle.** Project → Analytics → Enable. The component is already deployed.
 3. **Monitoring.** UptimeRobot (or similar) on `/` and on a `GET /api/contact` probe (expects 405); Sentry or a Vercel log drain for 5xx on the route; Google Search Console verified by a Porkbun TXT record, then Bing import.
-4. **GitHub profile.** Bio, location and website; pin `forge-gate` and the strongest originals; hide the forks; a profile README pointing at the site.
+4. **GitHub profile.** Website (`https://danjohnson.dev/`) and location are already set; the bio is empty. Suggested bio: _Product engineer and systems architect. High-reliability systems, AI-enabled products, governed AI-assisted development. Case studies at danjohnson.dev._ Then pin `forge-gate`, `patch-pilot` and the strongest originals, hide or archive the 37 forks, and point the existing `dsj7419/dsj7419` profile README at the site and ForgeGate.
 5. **Public repository (optional).** `README.md`, `LICENSE` (MIT for code) and `CONTENT-LICENSE.md` (all rights reserved for writing) are in place, so flipping visibility is the only step left.
 
 Engineering work after that is P1 in `FORENSICS_REPORT.md` §5: the art direction ("The Specification"), a durable rate limiter if abuse appears (ADR-0009), and a Playwright smoke suite.
@@ -415,7 +415,7 @@ src/content/pages/work-with-me.mdx
 
 ### 10. Tests (study the testing patterns)
 
-Browse `tests/` to understand the testing conventions: 41 files, 445 tests, TDD discipline. Start with `tests/app/api/contact/route.test.ts` (route), `tests/content/corpus.test.ts` (real content) and `tests/styles/contrast.test.ts` (design tokens).
+Browse `tests/` to understand the testing conventions: 41 files, 446 tests, TDD discipline. Start with `tests/app/api/contact/route.test.ts` (route), `tests/content/corpus.test.ts` (real content) and `tests/styles/contrast.test.ts` (design tokens).
 
 ---
 
