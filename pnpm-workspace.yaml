@@ -1,4 +1,9 @@
+# A release must be three days old before pnpm will install it (supply-chain cool-off).
 minimumReleaseAge: 4320
+# Type-definition packages ship no runtime code and no install scripts, so the cool-off adds
+# nothing for them and would block routine transitive refreshes.
+minimumReleaseAgeExclude:
+  - '@types/*'
 strictDepBuilds: true
 onlyBuiltDependencies:
   - esbuild
