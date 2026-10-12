@@ -7,6 +7,7 @@ export const siteConfig = {
   email: 'hello@danjohnson.dev',
   social: {
     github: 'https://github.com/dsj7419',
+    source: 'https://github.com/dsj7419/danjohnson.dev',
   },
   // One line of current state, rendered on the homepage and About. Edit when things change;
   // `updated` makes staleness visible to the owner before it is visible to visitors.

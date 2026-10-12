@@ -20,6 +20,15 @@ export function Footer() {
           >
             GitHub
           </a>
+          <a
+            href={siteConfig.social.source}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-(--color-text-muted) transition-colors hover:text-(--color-text)"
+            style={{ transitionDuration: 'var(--duration-fast)' }}
+          >
+            Source
+          </a>
           <Link
             href="/writing/feed.xml"
             className="text-sm text-(--color-text-muted) transition-colors hover:text-(--color-text)"
