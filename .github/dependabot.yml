@@ -10,6 +10,9 @@ updates:
       time: '06:00'
       timezone: America/Chicago
     open-pull-requests-limit: 5
+    # Mirrors pnpm minimumReleaseAge: a release must be three days old before it is proposed.
+    cooldown:
+      default-days: 3
     versioning-strategy: increase
     groups:
       minor-and-patch:

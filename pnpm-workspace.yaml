@@ -1,0 +1,6 @@
+minimumReleaseAge: 4320
+strictDepBuilds: true
+onlyBuiltDependencies:
+  - esbuild
+  - sharp
+  - unrs-resolver
