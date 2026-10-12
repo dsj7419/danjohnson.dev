@@ -25,7 +25,7 @@
   --color-accent-200: oklch(0.87 0.05 250);
   --color-accent-300: oklch(0.78 0.08 250);
   --color-accent-400: oklch(0.68 0.11 250);
-  --color-accent-500: oklch(0.55 0.14 250);
+  --color-accent-500: oklch(0.52 0.14 250);
   --color-accent-600: oklch(0.47 0.14 250);
   --color-accent-700: oklch(0.4 0.12 250);
   --color-accent-800: oklch(0.33 0.1 250);
@@ -48,6 +48,10 @@
   --color-text-muted: oklch(0.45 0.01 260);
   --color-text-faint: oklch(0.52 0.008 260);
   --color-border: oklch(0.88 0.005 250);
+  /* Paired tokens: each is tuned against the surface it is rendered on (tests/styles/contrast.test.ts). */
+  --color-border-input: oklch(0.58 0.01 260);
+  --color-on-accent: oklch(1 0 0);
+  --color-danger: oklch(0.47 0.19 27);
   --color-code-bg: oklch(0.955 0.004 250);
   --color-code-text: oklch(0.25 0.01 260);
 
@@ -66,10 +70,16 @@
   --color-text: oklch(0.93 0.005 250);
   --color-text-muted: oklch(0.7 0.008 250);
   --color-text-faint: oklch(0.6 0.008 250);
-  --color-border: oklch(0.28 0.01 260);
+  --color-border: oklch(0.32 0.01 260);
+  --color-border-input: oklch(0.52 0.01 260);
+  /* Filled accent surfaces are lighter here, so their label flips to ink. */
+  --color-on-accent: var(--color-accent-950);
+  --color-danger: oklch(0.75 0.16 25);
   --color-code-bg: oklch(0.12 0.01 260);
   --color-code-text: oklch(0.88 0.005 250);
   --color-accent-500: oklch(0.65 0.14 250);
+  /* Hover goes lighter on a dark background, never darker. */
+  --color-accent-600: oklch(0.75 0.12 250);
 }
 
 /* rehype-pretty-code dual theme support */
@@ -157,6 +167,15 @@
 
 [data-rehype-pretty-code-figure] code span[style*='--shiki-light:#E36209'] {
   --shiki-light: #a84207 !important;
+}
+
+/* Comments (#6A737D = 4.21:1) and the green used for YAML keys and strings (#22863A = 4.05:1) */
+[data-rehype-pretty-code-figure] code span[style*='--shiki-light:#6A737D'] {
+  --shiki-light: #57606a !important;
+}
+
+[data-rehype-pretty-code-figure] code span[style*='--shiki-light:#22863A'] {
+  --shiki-light: #13702c !important;
 }
 
 @layer base {

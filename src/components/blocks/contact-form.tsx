@@ -42,14 +42,14 @@ function FormField({
           aria-describedby={error ? errorId : undefined}
           className={`w-full rounded-md border px-4 py-3 text-base text-(--color-text) placeholder:text-(--color-text-faint) transition-colors bg-(--color-bg) focus:outline-none focus:ring-1 ${
             error
-              ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-              : 'border-(--color-border) focus:border-accent-500 focus:ring-accent-500'
+              ? 'border-(--color-danger) focus:border-(--color-danger) focus:ring-(--color-danger)'
+              : 'border-(--color-border-input) focus:border-accent-500 focus:ring-accent-500'
           }`}
           style={{ transitionDuration: 'var(--duration-fast)' }}
         />
       )}
       {error && (
-        <p id={errorId} role="alert" className="mt-1.5 text-sm text-red-500">
+        <p id={errorId} role="alert" className="mt-1.5 text-sm text-(--color-danger)">
           {error}
         </p>
       )}
@@ -151,8 +151,11 @@ export function ContactForm({ className = '' }: { className?: string }) {
       </div>
 
       {state.error && (
-        <div role="alert" className="mb-6 rounded-md border border-red-500/30 bg-red-500/5 p-4">
-          <p className="text-sm text-red-500">{state.error}</p>
+        <div
+          role="alert"
+          className="mb-6 rounded-md border border-(--color-danger)/30 bg-(--color-danger)/5 p-4"
+        >
+          <p className="text-sm text-(--color-danger)">{state.error}</p>
         </div>
       )}
 
@@ -189,8 +192,8 @@ export function ContactForm({ className = '' }: { className?: string }) {
             aria-describedby={state.fieldErrors?.['message'] ? 'contact-message-error' : undefined}
             className={`w-full resize-y rounded-md border px-4 py-3 text-base text-(--color-text) placeholder:text-(--color-text-faint) transition-colors bg-(--color-bg) focus:outline-none focus:ring-1 ${
               state.fieldErrors?.['message']
-                ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                : 'border-(--color-border) focus:border-accent-500 focus:ring-accent-500'
+                ? 'border-(--color-danger) focus:border-(--color-danger) focus:ring-(--color-danger)'
+                : 'border-(--color-border-input) focus:border-accent-500 focus:ring-accent-500'
             }`}
             style={{ transitionDuration: 'var(--duration-fast)' }}
             placeholder="What are you building? What kind of help are you looking for?"
@@ -207,7 +210,7 @@ export function ContactForm({ className = '' }: { className?: string }) {
           <button
             type="submit"
             disabled={pending}
-            className="inline-flex items-center justify-center rounded-md bg-accent-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-accent-600 disabled:opacity-50 disabled:pointer-events-none"
+            className="inline-flex items-center justify-center rounded-md bg-accent-500 px-6 py-3 text-sm font-medium text-(--color-on-accent) transition-colors hover:bg-accent-600 disabled:opacity-50 disabled:pointer-events-none"
             style={{ transitionDuration: 'var(--duration-fast)' }}
           >
             {pending ? 'Sending...' : 'Send message'}
