@@ -4,6 +4,7 @@ import type { ComponentType } from 'react'
 
 import { CaseStudyMeta } from '@/components/blocks/case-study-meta'
 import { CaseStudyNav } from '@/components/blocks/case-study-nav'
+import { ContactCta } from '@/components/blocks/contact-cta'
 import { MetricStrip } from '@/components/blocks/metric-strip'
 import { StackList } from '@/components/blocks/stack-list'
 import { Container } from '@/components/primitives/container'
@@ -125,6 +126,7 @@ export default async function CaseStudyPage({ params }: PageProps) {
           <Stack gap={6}>
             <Text variant="small">{entry.readingTime} min read</Text>
             <Content />
+            <ContactCta className="mt-6" />
           </Stack>
         </Container>
       </Section>

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 
+import { Button } from '@/components/primitives/button'
 import { siteConfig } from '@/config/site'
 
 import { MobileNav } from './mobile-nav'
@@ -17,7 +18,7 @@ export function Header() {
           {siteConfig.name}
         </Link>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           <nav className="hidden md:block" aria-label="Main navigation">
             <ul className="flex items-center gap-6">
               {siteConfig.nav.map((item) => (
@@ -25,11 +26,19 @@ export function Header() {
                   <NavLink href={item.href}>{item.label}</NavLink>
                 </li>
               ))}
+              <li>
+                <Button href={siteConfig.cta.href}>{siteConfig.cta.label}</Button>
+              </li>
             </ul>
           </nav>
 
+          {/* The primary action stays visible on phones without opening the menu (≥360px). */}
+          <div className="hidden min-[360px]:block md:hidden">
+            <Button href={siteConfig.cta.href}>{siteConfig.cta.label}</Button>
+          </div>
+
           <ThemeToggle />
-          <MobileNav items={siteConfig.nav} />
+          <MobileNav items={siteConfig.nav} cta={siteConfig.cta} />
         </div>
       </div>
     </header>

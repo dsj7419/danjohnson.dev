@@ -34,8 +34,28 @@ describe('Header', () => {
   it('renders navigation links', () => {
     render(<Header />)
     expect(screen.getByText('Work')).toBeInTheDocument()
+    expect(screen.getByText('How I Build')).toBeInTheDocument()
     expect(screen.getByText('Writing')).toBeInTheDocument()
     expect(screen.getByText('About')).toBeInTheDocument()
+  })
+
+  it('renders Work With Me as a primary button, once for desktop and once for the mobile bar', () => {
+    render(<Header />)
+    const buttons = screen.getAllByRole('link', { name: 'Work With Me' })
+    expect(buttons).toHaveLength(2)
+    for (const button of buttons) {
+      expect(button).toHaveAttribute('href', '/work-with-me')
+      expect(button.className).toContain('bg-accent-500')
+    }
+  })
+
+  it('does not list Work With Me among the plain text links', () => {
+    render(<Header />)
+    const nav = screen.getByRole('navigation', { name: 'Main navigation' })
+    const textLinks = Array.from(nav.querySelectorAll('a')).filter(
+      (a) => !a.className.includes('bg-accent-500'),
+    )
+    expect(textLinks.map((a) => a.textContent)).toEqual(['Work', 'How I Build', 'Writing', 'About'])
   })
 
   it('renders as header element', () => {

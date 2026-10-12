@@ -21,8 +21,9 @@ export const siteConfig = {
     { label: 'How I Build', href: '/how-i-build' },
     { label: 'Writing', href: '/writing' },
     { label: 'About', href: '/about' },
-    { label: 'Work With Me', href: '/work-with-me' },
   ],
+  // The one primary action, rendered as a button in the header on every page and every width.
+  cta: { label: 'Work With Me', href: '/work-with-me' },
   capabilities: [
     {
       title: 'Product Engineering',

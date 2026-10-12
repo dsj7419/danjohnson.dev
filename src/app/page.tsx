@@ -48,6 +48,16 @@ export default function HomePage() {
               and performance-critical applications with a focus on long-term architecture,
               security, and real-world usability.
             </Text>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+              <Button href="/work-with-me#contact">Work with me</Button>
+              <Link
+                href="/work"
+                className="text-sm font-medium text-(--color-text) underline underline-offset-4 transition-colors hover:text-accent-500"
+                style={{ transitionDuration: 'var(--duration-fast)' }}
+              >
+                See the work &rarr;
+              </Link>
+            </div>
             <CurrentlyStrip currently={siteConfig.currently} className="max-w-(--width-reading)" />
           </Stack>
         </Container>
@@ -168,7 +178,7 @@ export default function HomePage() {
               technical execution, I would like to hear about it.
             </Text>
             <div>
-              <Button href="/work-with-me">Get in touch</Button>
+              <Button href="/work-with-me#contact">Get in touch</Button>
             </div>
           </Stack>
         </Container>

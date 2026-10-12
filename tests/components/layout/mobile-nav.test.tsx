@@ -37,6 +37,17 @@ describe('MobileNav', () => {
     document.body.style.overflow = ''
   })
 
+  it('lists the call to action first in the panel when one is provided', async () => {
+    const user = userEvent.setup()
+    render(<MobileNav items={items} cta={{ label: 'Work With Me', href: '/work-with-me' }} />)
+    await user.click(screen.getByRole('button', { name: /open menu/i }))
+
+    const links = screen.getAllByRole('link')
+    expect(links[0]).toHaveTextContent('Work With Me')
+    expect(links[0]).toHaveAttribute('href', '/work-with-me')
+    expect(links.map((l) => l.textContent)).toEqual(['Work With Me', 'Work', 'Writing', 'About'])
+  })
+
   it('renders toggle button with correct initial aria state', () => {
     render(<MobileNav items={items} />)
     const button = screen.getByRole('button', { name: 'Open menu' })

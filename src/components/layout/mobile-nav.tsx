@@ -11,11 +11,13 @@ type NavItem = {
 
 type MobileNavProps = {
   items: readonly NavItem[]
+  /** Listed first in the panel so the primary action is never buried under the text links. */
+  cta?: NavItem
 }
 
 const PANEL_ID = 'mobile-nav-panel'
 
-export function MobileNav({ items }: MobileNavProps) {
+export function MobileNav({ items, cta }: MobileNavProps) {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
   const [lastPathname, setLastPathname] = useState(pathname)
@@ -119,6 +121,17 @@ export function MobileNav({ items }: MobileNavProps) {
           className="absolute left-0 right-0 top-full border-b border-(--color-border) bg-(--color-bg) px-content-x py-4"
         >
           <ul className="space-y-3">
+            {cta && (
+              <li>
+                <Link
+                  href={cta.href}
+                  onClick={close}
+                  className="block text-sm font-medium text-accent-500"
+                >
+                  {cta.label}
+                </Link>
+              </li>
+            )}
             {items.map((item) => (
               <li key={item.href}>
                 <Link

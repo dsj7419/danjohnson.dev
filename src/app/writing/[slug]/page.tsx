@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { ComponentType } from 'react'
 
+import { ContactCta } from '@/components/blocks/contact-cta'
 import { TableOfContents } from '@/components/blocks/table-of-contents'
 import { Container } from '@/components/primitives/container'
 import { Divider } from '@/components/primitives/divider'
@@ -100,6 +101,7 @@ export default async function ArticlePage({ params }: PageProps) {
           <Stack gap={8}>
             {entry.toc.length > 0 && <TableOfContents entries={entry.toc} />}
             <Content />
+            <ContactCta className="mt-6" />
           </Stack>
         </Container>
       </Section>
