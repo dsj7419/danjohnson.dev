@@ -49,79 +49,35 @@ The site is meant to be **judged by senior engineers and architects** who will i
 
 ---
 
-## Current Status (as of 2026-04-10, commit `e74ef0f`)
+## Current Status (as of 2026-10-12)
 
-| Phase                            | Status            | Notes                                                                                                                 |
-| -------------------------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Phase 1: Foundation              | Complete          | Next.js 16.2.3, TypeScript strict, Tailwind v4, MDX, Vitest, ESLint flat config, Husky, commitlint, GitHub Actions CI |
-| Phase 2: Content Engine          | Complete          | gray-matter + Zod validation, rehype-pretty-code (Shiki), 6 content blocks, MDX component mapping                     |
-| Phase 3: Content Delivery        | Complete          | Routes, listings, header, footer, mobile nav, theme toggle, 5 static pages                                            |
-| Phase 4: Presentation Quality    | Complete          | Homepage rewrite, case study layout polish, JSON-LD, OG images, favicon, accessibility                                |
-| **Phase 5: Authority & Content** | **Near-Complete** | 3 case studies, 2 articles published. Forges of Karinth is the remaining content target.                              |
-| **Engineering Quality Pass**     | **Complete**      | Tailwind v4 modernization, security patches, CSP hardening, robots.ts, mobile nav a11y, code cleanup                  |
+The site is live at **https://danjohnson.dev** (Vercel; the repository is private at `github.com/dsj7419/danjohnson.dev`; local checkout `D:\Projects\DanJohnsonSite`). In October 2026 a sixteen-team forensic review (`FORENSICS_REPORT.md` and `.forensics/`, both local and gitignored) graded the site, and the P0 list in `plans/2026-10-11-p0-handoff-for-opus.md` was executed. That plan's progress log is the detailed record of what changed and why; read it after this document.
 
 ### What's Published Live
 
-**Case Studies (3):**
+**Case studies (5):** Accrulith (`/work/accrulith`, featured), Restorative Craft, Austin Eischeid (both featured), Project Chimera, Forges of Karinth.
 
-- Austin Eischeid — Authority Platform & Editorial System (`/work/austin-eischeid`)
-- Project Chimera — Building an Editorial System Where Every Sentence Is Accountable (`/work/chimera`)
-- Restorative Craft — Building a Digital Practice with Heart and Discipline (`/work/restorative-craft`)
+**Articles (4):** Four Packages That Are Not Allowed to Know What Time It Is; How I Let an AI Write Code I Will Ship; Using AI in Real Products, Not Just Demos; Working With Designers.
 
-**Articles (2):**
+**Pages (6):** Home, About, How I Build, Work With Me (form first, "What Happens Next"), Privacy, plus the Work and Writing indexes.
 
-- Working With Designers: Turning Vision Into Reality (`/writing/working-with-designers`)
-- Using AI in Real Products, Not Just Demos (`/writing/using-ai-in-real-products`)
+**Conversion and trust:** a primary "Work With Me" button in the header on every page and width, a hero button pair, an end-of-content invitation on every case study and article, a dated "Currently" line (`siteConfig.currently`) on Home, About and Work With Me, and a privacy page linked from the form and footer.
 
-**Pages (5):**
+**Infrastructure:** per-page canonical and Open Graph metadata; build-time OG images (unknown slugs 404); sitemap, robots, RSS; JSON-LD; Vercel Web Analytics (cookieless; switched on in the Vercel dashboard); `POST /api/contact` with an origin guard, header sanitising and hashed-IP logging (ADR-0008, ADR-0009).
 
-- Homepage (6 sections: hero, featured work, capabilities, how I build teaser, selected writing, CTA)
-- About (concrete project references, cross-linked)
-- How I Build (architecture-first, TDD, AI-augmented, security, performance, collaboration)
-- Work With Me (positioning, mailto CTA)
-- Work index + Writing index
-
-**Infrastructure:**
-
-- Per-page OG images for all case studies and articles
-- Global OG image for homepage
-- `robots.txt` with sitemap reference
-- RSS feed for writing
-- Sitemap with priority ordering
-- Skip-to-content link
-- Full keyboard navigation on mobile nav (Escape, focus management)
-- 232 passing tests
-
-### Recent Engineering Work (April 2026)
-
-| Commit    | What                                                                                                                             |
-| --------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `e74ef0f` | Remove dead ArticleEntry `tags` prop, consolidate duplicate sort into generic `sortEntriesByFeaturedAndDate<T>`                  |
-| `2420139` | Mobile nav a11y: Escape dismiss, focus-to-first-link, focus-return-to-button, aria-controls, body scroll lock. 10 new tests.     |
-| `b408367` | Tailwind v4 canonical syntax (86 patterns), security patches (Next.js DoS, happy-dom, vite CVEs), CSP `connect-src`, `robots.ts` |
-| `5b62991` | Per-page OG images for case studies and articles                                                                                 |
-| `5d26765` | Desktop visual rhythm — hero density, grid balance, container alignment                                                          |
-| `15b6ee0` | Publish Restorative Craft case study                                                                                             |
-| `db45871` | Fix timezone-safe date rendering (UTC anchoring)                                                                                 |
+**Quality gates (ADR-0012):** `main` accepts only pull requests with a passing `Quality Checks` run. CI audits production dependencies, lints type-aware with zero warnings, checks formatting and types, runs 445 tests across 41 files with coverage thresholds, and builds. A token-contrast test holds WCAG AA in both themes; axe reports zero violations on every route in both themes.
 
 ### What's Next
 
-**Content (before launch):**
+Owner tasks, none of which can be done from the codebase:
 
-1. **Forges of Karinth case study** — deterministic simulation engine, integer-scaled math, seeded PRNG, reproducibility. Opens a systems engineering category no other case study covers.
+1. **Mail DNS (Porkbun).** Add MX forwarding for `dan@` and `hello@`, an SPF record for the apex, DMARC at `p=quarantine` with a `rua` address, and a CAA record. Then point the confirmation email's `Reply-To` back at `dan@danjohnson.dev` (one line in `src/app/api/contact/route.ts`, covered by a route test).
+2. **Vercel Web Analytics toggle.** Project → Analytics → Enable. The component is already deployed.
+3. **Monitoring.** UptimeRobot (or similar) on `/` and on a `GET /api/contact` probe (expects 405); Sentry or a Vercel log drain for 5xx on the route; Google Search Console verified by a Porkbun TXT record, then Bing import.
+4. **GitHub profile.** Bio, location and website; pin `forge-gate` and the strongest originals; hide the forks; a profile README pointing at the site.
+5. **Public repository (optional).** `README.md`, `LICENSE` (MIT for code) and `CONTENT-LICENSE.md` (all rights reserved for writing) are in place, so flipping visibility is the only step left.
 
-**Launch Readiness (before domain cutover):**
-
-- Lighthouse verification pass on all production pages
-- Internal link audit
-- OG image rendering verification (share previews)
-- Custom domain cutover to `danjohnson.dev`
-
-**Deferred (post-launch):**
-
-- Plausible analytics
-- Inquiry form via Resend (mailto CTA is sufficient now)
-- Third article ("How I Design Software Systems Before Writing Code" or "Performance Is a Feature")
+Engineering work after that is P1 in `FORENSICS_REPORT.md` §5: the art direction ("The Specification"), a durable rate limiter if abuse appears (ADR-0009), and a Playwright smoke suite.
 
 ---
 
@@ -129,20 +85,20 @@ The site is meant to be **judged by senior engineers and architects** who will i
 
 These are confirmed and not up for re-evaluation unless there's a compelling reason:
 
-| Layer               | Choice                                             | Version |
-| ------------------- | -------------------------------------------------- | ------- |
-| Framework           | Next.js (App Router)                               | 16.2.3  |
-| Language            | TypeScript strict mode (all flags)                 | 5.8.3   |
-| Styling             | Tailwind CSS v4 (CSS-first `@theme` config)        | 4.1.3   |
-| Content             | MDX-in-repo via `@next/mdx`, gray-matter, Zod      | —       |
-| Syntax highlighting | rehype-pretty-code + Shiki (dual theme)            | 0.14.3  |
-| Testing             | Vitest + React Testing Library + happy-dom         | 3.2.4   |
-| Linting             | ESLint flat config + Prettier + simple-import-sort | 9.25.0  |
-| Git hooks           | Husky + lint-staged + commitlint                   | —       |
-| CI                  | GitHub Actions: lint + typecheck + test + build    | —       |
-| Hosting             | Vercel (auto-deploys on push to main)              | —       |
-| Package manager     | pnpm                                               | 10.8.1  |
-| Fonts               | Self-hosted variable WOFF2 via `next/font/local`   | —       |
+| Layer               | Choice                                           | Version |
+| ------------------- | ------------------------------------------------ | ------- |
+| Framework           | Next.js (App Router), React 19                   | 16.4.0  |
+| Language            | TypeScript strict mode (all flags)               | 6.0.3   |
+| Styling             | Tailwind CSS v4 (CSS-first `@theme` config)      | 4.3.3   |
+| Content             | MDX-in-repo via `@next/mdx`, `yaml`, Zod 4       | —       |
+| Syntax highlighting | rehype-pretty-code + Shiki (dual theme)          | 0.14.5  |
+| Testing             | Vitest + React Testing Library + happy-dom       | 4.1.11  |
+| Linting             | ESLint (typescript-eslint strict, jsx-a11y)      | 9.39.5  |
+| Git hooks           | Husky + lint-staged + commitlint                 | —       |
+| CI                  | GitHub Actions; required check on `main`         | —       |
+| Hosting             | Vercel (deploys on merge to main)                | —       |
+| Package manager     | pnpm (Corepack)                                  | 10.34.6 |
+| Fonts               | Self-hosted variable WOFF2 via `next/font/local` | —       |
 
 ### Plugin Stack (4 Plugins)
 
@@ -169,7 +125,7 @@ Do not add plugins without strong justification.
 
 ### Architecture Rules
 
-- **Server Components by default.** `'use client'` only when interactivity genuinely requires it. Currently 4 client components: MobileNav, ThemeToggle, NavLink, CopyButton.
+- **Server Components by default.** `'use client'` only when interactivity genuinely requires it. Currently 5 client components: MobileNav, ThemeToggle, NavLink, CopyButton, ContactForm.
 - **Static-first, server-first.** All content pages statically generated at build time via `generateStaticParams` + `dynamicParams = false`.
 - **No new dependencies without justification.** Every dependency must earn its place.
 - **No margin on primitives for layout.** Section controls outer spacing, Stack controls inner spacing. Primitives use padding only.
@@ -201,9 +157,10 @@ Do not add plugins without strong justification.
 - Full security headers via `next.config.ts`: HSTS (preload), CSP (scoped), X-Frame-Options (DENY), Referrer-Policy, Permissions-Policy, X-Content-Type-Options.
 - CSP includes: `default-src 'self'`, `script-src 'self' 'unsafe-inline'`, `style-src 'self' 'unsafe-inline'`, `connect-src 'self'`, `img-src 'self' blob: data:`, `font-src 'self'`, `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`, `frame-ancestors 'none'`, `upgrade-insecure-requests`.
 - `unsafe-eval` only in development mode.
-- Zod validation at trust boundaries (frontmatter, future form input).
+- Zod validation at trust boundaries (front matter, contact form).
+- `'unsafe-inline'` stays while pages are statically generated; see ADR-0010.
 - No secrets in code. `.env.local` for development, Vercel env vars for production.
-- CI blocks on `pnpm audit --prod --audit-level=high`; the full audit runs as an advisory step. Dependabot opens grouped weekly PRs. Known accepted residue: `sprintf-js` (moderate, via gray-matter, no fix) and dev-only Vitest 3 advisories until the Vitest 4 upgrade.
+- CI blocks on `pnpm audit --prod --audit-level=high`; the full audit runs as an advisory step. Dependabot opens grouped weekly PRs. The production audit is clean; the only residue is `braces` (dev-only, no upstream fix). New installs wait three days after release (`pnpm-workspace.yaml`).
 
 ---
 
@@ -238,9 +195,9 @@ For trivial work (typos, small fixes, single-file edits): just do it.
 ### Commit Discipline
 
 - **Conventional commits enforced** by commitlint. Types: `feat`, `fix`, `docs`, `chore`, `refactor`, `perf`, `test`, `style`, `ci`, `build`, `revert`
-- **Verify before committing:** `pnpm typecheck && pnpm lint && pnpm test:run && pnpm build`
+- **Verify before committing:** `pnpm typecheck && pnpm lint && pnpm format:check && pnpm test:coverage && pnpm build`
 - **Keep concerns isolated.** Security patches, framework modernization, and feature work should be separate commits.
-- **Push after every meaningful commit** (Vercel auto-deploys to production).
+- **Every change goes through a pull request.** `main` is protected (ADR-0012): branch, push, `gh pr create --fill`, then `gh pr merge --auto --rebase`. The merge deploys to production.
 - **Husky pre-commit hook runs lint-staged** automatically. Don't bypass it.
 
 ### Ship Reports
@@ -261,7 +218,8 @@ Never say "done" without running:
 ```text
 pnpm typecheck
 pnpm lint
-pnpm test:run
+pnpm format:check
+pnpm test:coverage
 pnpm build
 ```
 
@@ -301,23 +259,20 @@ What this means in practice:
 | Storybook                         | Site is its own component showcase                |
 | Component library (shadcn, Radix) | Built from scratch — site IS the proof            |
 | Animation library (Framer Motion) | CSS transitions only                              |
-| Plausible analytics               | Deferred until content exists                     |
-| Inquiry form (Resend)             | Future phase, mailto CTA sufficient now           |
-| `/now` page                       | Maintenance burden                                |
+| `/now` page                       | One dated `siteConfig.currently` line instead     |
 
 ---
 
 ## Known Technical Debt (Low Priority)
 
-These were identified by independent code review agents (Apr 10, 2026) and are tracked but not blocking:
+Identified by independent code review agents (April 2026) and re-checked in October 2026; tracked but not blocking:
 
-| Item                                                                         | Severity | Notes                                                                                                                                                   |
-| ---------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ContentEntry.content` field is phantom (`null as unknown as ComponentType`) | LOW      | Field exists in type but is never populated. Architectural decision: remove from type or make optional.                                                 |
-| ContactCTA uses raw elements instead of primitives                           | LOW      | Partially justified: mailto can't use Button (internal links only), card layout doesn't map to Section. Would need Button to support external links.    |
-| `color-scheme: light dark` may conflict with class-based dark toggle         | LOW      | Could cause scrollbar color mismatch. Needs visual verification.                                                                                        |
-| CSP `unsafe-inline` could be replaced with SHA-256 hash                      | LOW      | Future hardening. The inline theme script is a const — its hash could replace unsafe-inline.                                                            |
-| Shiki `github-light` token contrast overrides applied                        | LOW      | Two tokens (`#D73A49`, `#E36209`) overridden via CSS `!important` on `--shiki-light` to pass WCAG AA. Original theme colors fail AA even on pure white. |
+| Item                                                                         | Severity | Notes                                                                                                                                                                          |
+| ---------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ContentEntry.content` field is phantom (`null as unknown as ComponentType`) | LOW      | Field exists in type but is never populated. Architectural decision: remove from type or make optional.                                                                        |
+| `color-scheme: light dark` may conflict with class-based dark toggle         | LOW      | Could cause scrollbar color mismatch. Needs visual verification.                                                                                                               |
+| CSP `unsafe-inline`                                                          | ACCEPTED | Hashes and nonces are not viable under static generation; reasoning in ADR-0010.                                                                                               |
+| Shiki `github-light` token contrast overrides applied                        | LOW      | Four tokens (`#D73A49`, `#E36209`, `#6A737D`, `#22863A`) overridden via CSS `!important` on `--shiki-light` to pass WCAG AA. Original theme colors fail AA even on pure white. |
 
 ---
 
@@ -335,11 +290,17 @@ docs/architecture/decisions/ADR-0004-design-system-primitives.md
 docs/architecture/decisions/ADR-0005-content-engine.md
 docs/architecture/decisions/ADR-0006-content-delivery.md
 docs/architecture/decisions/ADR-0007-presentation-quality.md
+docs/architecture/decisions/ADR-0008-contact-route-handler.md
+docs/architecture/decisions/ADR-0009-in-memory-rate-limiting.md
+docs/architecture/decisions/ADR-0010-csp-posture.md
+docs/architecture/decisions/ADR-0011-analytics.md
+docs/architecture/decisions/ADR-0012-quality-gates.md
 ```
 
 ### 2. Planning & Content Standards
 
 ```text
+plans/2026-10-11-p0-handoff-for-opus.md
 docs/planning/EPICS.md
 docs/content/case-study-template.md
 docs/content/writing-guidelines.md
@@ -367,6 +328,8 @@ src/lib/content.ts
 src/lib/metadata.ts
 src/lib/structured-data.ts
 src/lib/dates.ts
+src/lib/frontmatter.ts
+src/lib/email/contact-email.ts
 ```
 
 ### 5. Design System (Primitives)
@@ -397,6 +360,9 @@ src/components/blocks/stack-list.tsx
 src/components/blocks/project-card.tsx
 src/components/blocks/article-entry.tsx
 src/components/blocks/contact-cta.tsx
+src/components/blocks/contact-form.tsx
+src/components/blocks/currently-strip.tsx
+src/components/blocks/copy-button.tsx
 src/components/blocks/related-content.tsx
 ```
 
@@ -422,6 +388,8 @@ src/app/writing/[slug]/page.tsx
 src/app/about/page.tsx
 src/app/how-i-build/page.tsx
 src/app/work-with-me/page.tsx
+src/app/privacy/page.tsx
+src/app/api/contact/route.ts
 src/app/sitemap.ts
 src/app/robots.ts
 src/app/writing/feed.xml/route.ts
@@ -432,9 +400,13 @@ src/app/not-found.tsx
 ### 9. Existing Content (study the writing voice)
 
 ```text
+src/content/case-studies/accrulith.mdx
 src/content/case-studies/austin-eischeid.mdx
 src/content/case-studies/chimera.mdx
+src/content/case-studies/forges-of-karinth.mdx
 src/content/case-studies/restorative-craft.mdx
+src/content/writing/four-packages-that-cannot-know-the-time.mdx
+src/content/writing/how-i-let-an-ai-write-code-i-will-ship.mdx
 src/content/writing/working-with-designers.mdx
 src/content/writing/using-ai-in-real-products.mdx
 src/content/pages/about.mdx
@@ -444,7 +416,7 @@ src/content/pages/work-with-me.mdx
 
 ### 10. Tests (study the testing patterns)
 
-Browse `tests/` to understand the testing conventions. 28 test files, 232 tests, TDD discipline.
+Browse `tests/` to understand the testing conventions: 41 files, 445 tests, TDD discipline. Start with `tests/app/api/contact/route.test.ts` (route), `tests/content/corpus.test.ts` (real content) and `tests/styles/contrast.test.ts` (design tokens).
 
 ---
 
