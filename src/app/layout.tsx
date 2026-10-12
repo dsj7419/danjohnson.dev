@@ -1,5 +1,6 @@
 import '@/styles/globals.css'
 
+import { Analytics } from '@vercel/analytics/next'
 import type { Metadata } from 'next'
 
 import { Footer } from '@/components/layout/footer'
@@ -34,6 +35,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </main>
         <Footer />
+        {/* Cookieless page views (Vercel Web Analytics); same-origin, so the CSP needs no change. */}
+        <Analytics />
       </body>
     </html>
   )
