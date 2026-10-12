@@ -5,8 +5,8 @@ export const caseStudyFrontmatterSchema = z.object({
   title: z.string().min(1),
   subtitle: z.string().optional(),
   description: z.string().min(1),
-  date: z.string().date(),
-  updatedAt: z.string().date().optional(),
+  date: z.iso.date(),
+  updatedAt: z.iso.date().optional(),
   tags: z.array(z.string()).min(1),
   featured: z.boolean().default(false),
   draft: z.boolean().default(false),
@@ -34,8 +34,8 @@ export type CaseStudyFrontmatter = z.infer<typeof caseStudyFrontmatterSchema>
 export const articleFrontmatterSchema = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
-  date: z.string().date(),
-  updatedAt: z.string().date().optional(),
+  date: z.iso.date(),
+  updatedAt: z.iso.date().optional(),
   tags: z.array(z.string()).min(1),
   category: z.enum([
     'engineering-philosophy',

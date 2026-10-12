@@ -2,7 +2,8 @@ import { z } from 'zod'
 
 export const contactFormSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name is too long'),
-  email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
+  // min() runs before the format check so an empty field reports 'required', not 'invalid'.
+  email: z.string().min(1, 'Email is required').pipe(z.email('Please enter a valid email address')),
   company: z.string().max(100, 'Company name is too long').optional().or(z.literal('')),
   message: z
     .string()
