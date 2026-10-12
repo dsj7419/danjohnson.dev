@@ -1,9 +1,9 @@
 import fs from 'fs'
 import GithubSlugger from 'github-slugger'
-import matter from 'gray-matter'
 import path from 'path'
 import type { z } from 'zod'
 
+import { parseFrontmatter } from '@/lib/frontmatter'
 import type {
   ArticleFrontmatter,
   CaseStudyFrontmatter,
@@ -96,7 +96,7 @@ function loadContentEntries<Output>(
     .map((filename) => {
       const filePath = path.join(contentPath, filename)
       const raw = fs.readFileSync(filePath, 'utf-8')
-      const { data, content } = matter(raw)
+      const { data, content } = parseFrontmatter(raw)
       const slug = filename.replace(/\.mdx$/, '')
 
       const parsed = schema.safeParse(data)

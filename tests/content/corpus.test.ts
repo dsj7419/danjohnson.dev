@@ -1,8 +1,8 @@
 import fs from 'fs'
-import matter from 'gray-matter'
 import path from 'path'
 
 import { extractToc } from '@/lib/content'
+import { parseFrontmatter } from '@/lib/frontmatter'
 
 // Content-contract tests over the real MDX corpus (no mocks). They guard the properties the
 // rendered site depends on: TOC ids that rehype-slug will also produce, unique per document,
@@ -22,7 +22,7 @@ function loadCorpus(): CorpusFile[] {
       .map((file) => ({
         collection,
         file,
-        body: matter(fs.readFileSync(path.join(dir, file), 'utf8')).content,
+        body: parseFrontmatter(fs.readFileSync(path.join(dir, file), 'utf8')).content,
       }))
   })
 }
